@@ -1,0 +1,9 @@
+#!/bin/bash
+source $HOME/src/fdo/menv
+
+#export CFLAGS='-O2 -s -DNDEBUG'
+#export CXXFLAGS="$CFLAGS"
+#export CPPFLAGS="$CFLAGS"
+
+cd $HOME/src/fdo/mesa && \
+  PATH=/usr/lib/ccache:$PATH make -j8 $*

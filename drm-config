@@ -1,0 +1,5 @@
+source $HOME/src/fdo/menv
+CFLAGS='' CXXFLAGS='' \
+./autogen.sh \
+  --prefix=$PREFIX \
+  --enable-nouveau-experimental-api --without-cairo

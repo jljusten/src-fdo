@@ -1,0 +1,2 @@
+source $HOME/src/fdo/menv
+./autogen.sh --prefix=$PREFIX

@@ -1,0 +1,11 @@
+source $HOME/src/fdo/menv
+CFLAGS='' CXXFLAGS='' \
+./autogen.sh \
+  --prefix=$PREFIX \
+  --enable-gles2 --enable-gles1 \
+  --disable-glu --with-gallium-drivers='' \
+  --with-dri-drivers=i965,swrast \
+  --enable-debug \
+  --disable-shared-glapi --enable-glx-tls --enable-texture-float \
+  --with-egl-platforms=x11 --disable-gbm --disable-gallium-egl
+#  --with-egl-platforms=x11,wayland,drm --enable-gbm --disable-gallium-egl

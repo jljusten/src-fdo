@@ -1,0 +1,13 @@
+#! /bin/bash
+BASE_DIR=$HOME/src/fdo
+source $BASE_DIR/menv
+
+#export LD_LIBRARY_PATH=$BASE_DIR/glaze/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+export LD_PRELOAD=$BASE_DIR/fips/libfips-64.so
+export FIPS_LIBGL=$BASE_DIR/mesa/lib/libGL.so
+#export GLAZE_LIBGL=$BASE_DIR/mesa/lib/libGL.so
+#export GLAZE_WRAPPER=$BASE_DIR/fips/libfips-64.so
+#export GLAZE_WRAPPER=$BASE_DIR/fips/libfips-64.soz
+export vblank_mode=0
+
+$@

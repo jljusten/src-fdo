@@ -1,0 +1,5 @@
+#!/bin/bash
+
+source /home/jljusten/src/fdo/menv
+#PIGLIT_PLATFORM=gbm
+/home/jljusten/src/fdo/piglit/piglit-run.py -p gbm $*

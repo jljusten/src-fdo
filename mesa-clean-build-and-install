@@ -1,0 +1,7 @@
+#!/bin/bash
+source $HOME/src/fdo/menv
+
+cd $HOME/src/fdo/mesa && \
+  git clean -xdf && \
+  ../mesa-config && \
+  $HOME/src/fdo/mesa-build-and-install

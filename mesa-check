@@ -1,0 +1,5 @@
+#!/bin/bash
+source $HOME/src/fdo/menv
+
+cd $HOME/src/fdo/mesa && \
+  PATH=/usr/lib/ccache:$PATH make -j8 check

@@ -1,0 +1,19 @@
+source $HOME/src/fdo/menv
+#ARCHES="--enable-32-bit --enable-64-bit"
+
+CFLAGS='' CXXFLAGS='' \
+./autogen.sh \
+  --prefix=$PREFIX \
+  $ARCHES \
+  --enable-gles2 --enable-gles1 \
+  --enable-egl \
+  --enable-debug \
+  --enable-shared-glapi --enable-glx-tls --enable-texture-float \
+  --with-egl-drivers=dri2,glx --with-egl-platforms=x11,drm,wayland \
+  --enable-gbm \
+  --disable-glu \
+  --with-gallium-drivers=i915,r300,nouveau,svga,swrast \
+  --disable-gallium-egl
+#  --with-gallium-drivers=i915,r300,r600,radeonsi,nouveau,svga,swrast \
+#  --with-dri-drivers=i965,swrast \
+#  --with-egl-platforms=x11,wayland,drm --enable-gbm --disable-gallium-egl

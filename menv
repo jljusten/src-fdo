@@ -1,0 +1,23 @@
+
+if [[ -z "$MENV_INCLUDED" ]];
+then
+
+export MENV_INCLUDED=1
+export FDO=/home/jljusten/src/fdo/pfx
+export PREFIX=$FDO
+#export ACLOCAL="aclocal -I $PREFIX/share/aclocal"
+export PKG_CONFIG_LIBDIR=$PREFIX/lib/pkgconfig
+export PKG_CONFIG_PATH=$PKG_CONFIG_LIBDIR:$PREFIX/share/pkgconfig:/usr/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig
+export LD_LIBRARY_PATH=$PREFIX/lib/x86_64-linux-gnu:$PREFIX/lib:$PREFIX/lib/dri:/usr/lib:/usr/lib/x86_64-linux-gnu
+export LIBRARY_PATH=$LD_LIBRARY_PATH
+export LIBGL_DRIVERS_DIR=$PREFIX/lib/dri
+export DRI_DRIVER_SEARCH_DIR=$LIBGL_DRIVERS_DIR
+#export TRACE_LIBGL=$PREFIX/lib/libGL.so
+export CMAKE_INCLUDE_PATH=$PREFIX/include
+export CMAKE_LIBRARY_PATH=$LD_LIBRARY_PATH
+export CMAKE_PREFIX_PATH=$PREFIX
+export CMAKE_INSTALL_PREFIX=$PREFIX
+export PATH=$PREFIX/bin:$PREFIX/sbin:$PATH
+export CPATH=$CMAKE_INCLUDE_PATH
+
+fi
