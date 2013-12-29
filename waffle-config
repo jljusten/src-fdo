@@ -2,11 +2,14 @@ source $HOME/src/fdo/menv
 export WAFFLE_SOURCE_DIR=$HOME/src/fdo/waffle
 rm $WAFFLE_SOURCE_DIR/CMakeCache.txt
 cmake \
-  -DCMAKE_LIBRARY_PATH=$(echo $LIBRARY_PATH | sed 's/:/;/g') \
   -DCMAKE_BUILD_TYPE=Debug \
   -Dwaffle_has_glx=1 \
   -Dwaffle_has_wayland=1 \
   -Dwaffle_has_x11_egl=1 \
   -Dwaffle_has_gbm=1 \
+  -Dwaffle_build_htmldocs=1 \
+  -Dwaffle_build_manpages=1 \
   -DCMAKE_INSTALL_PREFIX=$PREFIX \
+  -G Ninja \
   $WAFFLE_SOURCE_DIR
+#  -DCMAKE_LIBRARY_PATH=$(echo $LIBRARY_PATH | sed 's/:/;/g') \
