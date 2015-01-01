@@ -1,9 +1,13 @@
 source $HOME/src/fdo/menv
 #ARCHES="--enable-32-bit --enable-64-bit"
 
-#export CFLAGS='-O2 -s -DNDEBUG'
-#export CXXFLAGS="$CFLAGS"
-#export CPPFLAGS="$CFLAGS"
+if [ -z "$DEBUG" ]; then
+  export CFLAGS='-O2 -s -DNDEBUG'
+  export CXXFLAGS="$CFLAGS"
+  export CPPFLAGS="$CFLAGS"
+else
+  export DEBUG_FLAG=--enable-debug
+fi
 
 ./autogen.sh \
   --prefix=$PREFIX \
@@ -11,7 +15,7 @@ source $HOME/src/fdo/menv
   --enable-gles3 --enable-gles2 --enable-gles1 \
   --enable-egl \
   --with-dri-drivers=i965,swrast \
-  --enable-debug \
+  $DEBUG_FLAG \
   --enable-texture-float \
   --enable-shared-glapi \
   --enable-glx-tls \
@@ -21,3 +25,10 @@ source $HOME/src/fdo/menv
   --disable-gallium-egl \
   CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" CPPFLAGS="$CPPFLAGS"
 #  --with-egl-platforms=x11,wayland,drm --enable-gbm --disable-gallium-egl
+
+if [ -n "$DEBUG" ]; then
+  echo Configured for DEBUG
+else
+  echo Configured for RELEASE
+fi
+

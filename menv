@@ -1,4 +1,6 @@
 
+DEBUG=1
+
 if [[ -z "$MENV_INCLUDED" ]];
 then
 
