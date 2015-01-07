@@ -1,5 +1,8 @@
+#!/bin/bash
 
-DEBUG=1
+if [ ! -v DEBUG ]; then
+  DEBUG=1
+fi
 
 if [[ -z "$MENV_INCLUDED" ]];
 then
