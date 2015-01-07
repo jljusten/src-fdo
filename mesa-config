@@ -1,6 +1,10 @@
 source $HOME/src/fdo/menv
 #ARCHES="--enable-32-bit --enable-64-bit"
 
+if [[ "$DEBUG" == "0" ]]; then
+  unset DEBUG
+fi
+
 if [ -z "$DEBUG" ]; then
   export CFLAGS='-O2 -s -DNDEBUG'
   export CXXFLAGS="$CFLAGS"
