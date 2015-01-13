@@ -6,7 +6,7 @@ if [[ "$DEBUG" == "0" ]]; then
 fi
 
 if [ -z "$DEBUG" ]; then
-  export CFLAGS='-O2 -s -DNDEBUG'
+  export CFLAGS='-O2 -DNDEBUG'
   export CXXFLAGS="$CFLAGS"
   export CPPFLAGS="$CFLAGS"
 else
