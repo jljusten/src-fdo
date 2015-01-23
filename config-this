@@ -1,14 +1,8 @@
 source $HOME/src/fdo/menv
 
 PROJECT=`basename $PWD`
-case $PROJECT in
-  mesa | \
-  piglit | \
-  waffle | \
-  wayland)
-    ../$PROJECT-config $*
-    ;;
-  *)
-    echo Unknown project: $PROJECT
-esac
-
+if [[ -x ../$PROJECT-config ]]; then
+  ../$PROJECT-config "$@"
+else
+  echo Unknown project: $PROJECT
+fi
