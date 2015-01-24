@@ -1,0 +1,10 @@
+#!/bin/bash
+
+XEPHYR=$HOME/src/fdo/xorg-xserver/hw/kdrive/ephyr/Xephyr
+XEPHYR=Xephyr
+$HOME/src/fdo/run-with-src-dri.sh \
+    $XEPHYR -glamor :1 -schedMax 2000 -screen 1024x768 -retro -verbosity 999 &
+
+sleep 1
+
+DISPLAY=:1 xterm
