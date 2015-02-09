@@ -27,7 +27,9 @@ fi
   --enable-gbm \
   --disable-glu --with-gallium-drivers='' \
   --disable-gallium-egl \
-  CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" CPPFLAGS="$CPPFLAGS"
+  CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" CPPFLAGS="$CPPFLAGS" \
+  "$@"
+
 #  --with-egl-platforms=x11,wayland,drm --enable-gbm --disable-gallium-egl
 
 if [ -n "$DEBUG" ]; then
