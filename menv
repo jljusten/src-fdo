@@ -8,7 +8,7 @@ if [[ -z "$MENV_INCLUDED" ]];
 then
 
 export MENV_INCLUDED=1
-export FDO=/home/jljusten/src/fdo/pfx
+export FDO=$HOME/src/fdo/pfx
 export PREFIX=$FDO
 #export ACLOCAL="aclocal -I $PREFIX/share/aclocal"
 export PKG_CONFIG_LIBDIR=$PREFIX/lib/pkgconfig
