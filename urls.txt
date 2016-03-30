@@ -1,0 +1,12 @@
+git://anongit.freedesktop.org/mesa/mesa
+git://github.com/waffle-gl/waffle
+git://anongit.freedesktop.org/git/piglit
+git://anongit.freedesktop.org/git/mesa/drm
+git://anongit.freedesktop.org/mesa/shader-db
+git://anongit.freedesktop.org/beignet
+git://anongit.freedesktop.org/mesa/crucible
+git://anongit.freedesktop.org/xorg/driver/xf86-video-intel
+git://anongit.freedesktop.org/xorg/app/intel-gpu-tools
+
+git://github.com/KhronosGroup/Vulkan-LoaderAndValidationLayers.git
+git://github.com/SaschaWillems/Vulkan.git
