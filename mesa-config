@@ -27,6 +27,7 @@ fi
   --enable-gbm \
   --disable-glu --with-gallium-drivers='' \
   --disable-gallium-egl \
+  --with-vulkan-drivers=intel \
   CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" CPPFLAGS="$CPPFLAGS" \
   "$@"
 
