@@ -8,7 +8,13 @@ if [ "$GDB" == "0" ]; then
 else
   GDB="gdb --args"
 fi
+: ${AUB=0}
+if [ "$AUB" == "0" ]; then
+  AUB=""
+else
+  AUB="intel_aubdump"
+fi
 if [ -z "$PIGLIT_PLATFORM" -a -z "$DISPLAY" ]; then
   export PIGLIT_PLATFORM=gbm
 fi
-$GDB $*
+$AUB $GDB $*
