@@ -1,7 +1,9 @@
 #!/bin/bash
 source $HOME/src/fdo/menv
-export LIBGL_DRIVERS_PATH=$HOME/src/fdo/mesa/lib
-export GBM_DRIVERS_PATH=$HOME/src/fdo/mesa/lib
+
+export LIBGL_DRIVERS_PATH=$MESA_DIR/lib
+export GBM_DRIVERS_PATH=$MESA_DIR/lib
+
 : ${GDB=0}
 if [ "$GDB" == "0" ]; then
   GDB=""

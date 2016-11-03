@@ -4,13 +4,16 @@ if [ ! -v DEBUG ]; then
   DEBUG=1
 fi
 
+: ${MESA="mesa"}
+MESA_DIR=$HOME/src/fdo/$MESA
+
 if [[ -z "$MENV_INCLUDED" ]];
 then
 
 export MENV_INCLUDED=1
 export FDO=$HOME/src/fdo/pfx
 export PREFIX=$FDO
-export VK_ICD_FILENAMES=$HOME/src/fdo/mesa/src/intel/vulkan/dev_icd.json
+export VK_ICD_FILENAMES=$MESA_DIR/src/intel/vulkan/dev_icd.json
 #export ACLOCAL="aclocal -I $PREFIX/share/aclocal"
 export PKG_CONFIG_LIBDIR=$PREFIX/lib/pkgconfig
 export PKG_CONFIG_PATH=$PKG_CONFIG_LIBDIR:$PREFIX/share/pkgconfig:/usr/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig
