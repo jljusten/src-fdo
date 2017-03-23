@@ -14,6 +14,15 @@ if [ "$AUB" != "0" ]; then
     set - intel_aubdump "$@"
 fi
 
+: ${SHADER_CACHE=0}
+if [ "$SHADER_CACHE" != "0" ]; then
+    export INTEL_SHADER_CACHE=1
+    export MESA_GLSL_CACHE=1
+else
+    unset INTEL_SHADER_CACHE
+    export MESA_GLSL_CACHE=0
+fi
+
 if [ -z "$PIGLIT_PLATFORM" -a -z "$DISPLAY" ]; then
   export PIGLIT_PLATFORM=gbm
 fi
