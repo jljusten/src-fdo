@@ -1,4 +1,5 @@
-source $HOME/src/fdo/menv
+#!/bin/bash
+source $(dirname $0)/menv
 
 PROJECT=`basename $PWD`
 if [[ -x ../$PROJECT-config ]]; then

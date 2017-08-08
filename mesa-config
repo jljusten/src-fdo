@@ -1,25 +1,36 @@
-source $HOME/src/fdo/menv
-#ARCHES="--enable-32-bit --enable-64-bit"
+#!/bin/bash
+source $(dirname $0)/menv
+
+if [ -z "$CFLAGS" ]; then
+CFLAGS="-m${FDO_SIZE}"
+fi
+if [ -z "$CXXFLAGS" ]; then
+CXXFLAGS="-m${FDO_SIZE}"
+fi
+if [ -z "$CPPFLAGS" ]; then
+CPPFLAGS="-m${FDO_SIZE}"
+fi
 
 if [[ "$DEBUG" == "0" ]]; then
   unset DEBUG
 fi
 
 if [ -z "$DEBUG" ]; then
-  export CFLAGS='-O2 -DNDEBUG --debug'
-  export CXXFLAGS="$CFLAGS"
-  export CPPFLAGS="$CFLAGS"
+  D_CFLAGS='-O2 -DNDEBUG --debug'
+  export CFLAGS="$CFLAGS $D_CFLAGS"
+  export CXXFLAGS="$CXXFLAGS $D_CFLAGS"
+  export CPPFLAGS="$CPPFLAGS $D_CFLAGS"
 else
   export DEBUG_FLAG=--enable-debug
 fi
 
 ./autogen.sh \
   --prefix=$PREFIX \
-  $ARCHES \
   --enable-gles3 --enable-gles2 --enable-gles1 \
   --enable-egl \
   --with-dri-drivers=i965,swrast \
   $DEBUG_FLAG \
+  $HOST_FLAG \
   --enable-texture-float \
   --enable-shared-glapi \
   --enable-glx-tls \

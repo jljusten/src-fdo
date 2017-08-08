@@ -4,21 +4,31 @@ if [ ! -v DEBUG ]; then
   DEBUG=1
 fi
 
-: ${MESA="mesa"}
-MESA_DIR=$HOME/src/fdo/$MESA
-
 if [[ -z "$MENV_INCLUDED" ]];
 then
 
 export MENV_INCLUDED=1
-export FDO=$HOME/src/fdo/pfx
-export PREFIX=$FDO
+
+export FDO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+if [ "$(basename $FDO)" == "fdo32" ]; then
+    export FDO_SIZE=32
+    export LIB_ARCH=i386
+else
+    export FDO_SIZE=64
+    export LIB_ARCH=x86_64
+fi
+
+: ${MESA="mesa"}
+MESA_DIR=$FDO/$MESA
+
+export PREFIX=$FDO/pfx
 export VK_ICD_FILENAMES=$MESA_DIR/src/intel/vulkan/dev_icd.json
 #export ACLOCAL="aclocal -I $PREFIX/share/aclocal"
 export PKG_CONFIG_LIBDIR=$PREFIX/lib/pkgconfig
-export PKG_CONFIG_PATH=$PKG_CONFIG_LIBDIR:$PREFIX/share/pkgconfig:/usr/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig
-export LD_LIBRARY_PATH=$PREFIX/lib/x86_64-linux-gnu:$PREFIX/lib:$PREFIX/lib/dri:/usr/lib:/usr/lib/x86_64-linux-gnu
-export LD_LIBRARY_PATH=$HOME/src/fdo/LoaderAndTools/loader:$LD_LIBRARY_PATH
+export PKG_CONFIG_PATH=$PKG_CONFIG_LIBDIR:$PREFIX/share/pkgconfig:/usr/lib/pkgconfig:/usr/lib/$LIB_ARCH-linux-gnu/pkgconfig:/usr/share/pkgconfig
+export LD_LIBRARY_PATH=$PREFIX/lib/$LIB_ARCH-linux-gnu:$PREFIX/lib:$PREFIX/lib/dri:/usr/lib:/usr/lib/$LIB_ARCH-linux-gnu
+export LD_LIBRARY_PATH=$FDO/LoaderAndTools/loader:$LD_LIBRARY_PATH
 export LIBRARY_PATH=$LD_LIBRARY_PATH
 export LIBGL_DRIVERS_DIR=$PREFIX/lib/dri
 export DRI_DRIVER_SEARCH_DIR=$LIBGL_DRIVERS_DIR
