@@ -1,9 +1,16 @@
 #!/bin/bash
-source $(dirname $0)/menv
+source "$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"/menv
 
 PROJECT=`basename $PWD`
-if [[ -x ../$PROJECT-config ]]; then
-  ../$PROJECT-config "$@"
+
+: ${FDO=".."}
+
+if [[ "$PROJECT" =~ ^mesa.+$ ]]; then
+PROJECT=mesa
+fi
+
+if [[ -x $FDO/$PROJECT-config ]]; then
+  $FDO/$PROJECT-config "$@"
 else
   echo Unknown project: $PROJECT
 fi

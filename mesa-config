@@ -1,5 +1,5 @@
 #!/bin/bash
-source $(dirname $0)/menv
+source "$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"/menv
 
 if [ -z "$CFLAGS" ]; then
 CFLAGS="-m${FDO_SIZE}"
@@ -44,9 +44,11 @@ fi
 
 #  --with-egl-platforms=x11,wayland,drm --enable-gbm --disable-gallium-egl
 
+: ${FDO_PRJ="mesa"}
+
 if [ -n "$DEBUG" ]; then
-  echo Configured for DEBUG
+  echo $FDO_PRJ configured for DEBUG
 else
-  echo Configured for RELEASE
+  echo $FDO_PRJ configured for RELEASE
 fi
 
