@@ -3,3 +3,9 @@ source "$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"/menv
 
 cd $MESA_DIR && \
   PATH=/usr/lib/ccache:$PATH make -j8 $*
+
+NRESULT=$?
+
+echo "Built $MESA_DIR => $NRESULT"
+
+exit $NRESULT
