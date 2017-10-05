@@ -12,8 +12,9 @@ export MENV_INCLUDED=1
 
 export FDO="$(cd ".." && pwd)"
 
-if [[ "$FDO" =~ ^.*/fdo.*$ ]]; then
+if [[ "$FDO" =~ ^.*/fdo[^/]*$ ]]; then
     export FDO_PRJ="$(basename "$(pwd)")"
+    if [[ "$FDO_PRJ" =~ ^mesa.*$ ]]; then MESA="$FDO_PRJ"; fi
 else
     export FDO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     unset FDO_PRJ
