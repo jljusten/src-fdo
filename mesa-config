@@ -20,10 +20,19 @@ if [ -z "$DEBUG" ]; then
   export CFLAGS="$CFLAGS $D_CFLAGS"
   export CXXFLAGS="$CXXFLAGS $D_CFLAGS"
   export CPPFLAGS="$CPPFLAGS $D_CFLAGS"
+  MESON_BUILDTYPE=release
 else
   export DEBUG_FLAG=--enable-debug
+  MESON_BUILDTYPE=debug
 fi
 
+if [ -f "$MESA_DIR/meson.build" ]; then
+    meson \
+        -Dgallium-drivers= -Ddri-drivers=i965 -Dvulkan-drivers=anv \
+        --prefix=/usr \
+        --buildtype $MESON_BUILDTYPE \
+        "$MESA_DIR" "$MESA_BUILD_DIR"
+else
 ./autogen.sh \
   --prefix=$PREFIX \
   --enable-gles3 --enable-gles2 --enable-gles1 \
@@ -41,6 +50,7 @@ fi
   --with-vulkan-drivers=intel \
   CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" CPPFLAGS="$CPPFLAGS" \
   "$@"
+fi
 
 #  --with-egl-platforms=x11,wayland,drm --enable-gbm --disable-gallium-egl
 
