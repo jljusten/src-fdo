@@ -29,7 +29,7 @@ else
 fi
 
 : ${MESA="mesa"}
-MESA_DIR=$FDO/$MESA
+export MESA_DIR=$FDO/$MESA
 
 export PREFIX=$FDO/pfx
 export VK_ICD_FILENAMES=$MESA_DIR/src/intel/vulkan/dev_icd.json
