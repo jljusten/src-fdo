@@ -31,7 +31,21 @@ fi
 : ${MESA="mesa"}
 export MESA_DIR=$FDO/$MESA
 
-export PREFIX=$FDO/pfx
+FDO_BUILD_DIR=$FDO/build
+if [ "$DEBUG" -ne 0 ]; then
+    FDO_BUILD_DIR=$FDO_BUILD_DIR/debug
+else
+    FDO_BUILD_DIR=$FDO_BUILD_DIR/release
+fi
+
+mkdir -p "$FDO_BUILD_DIR"
+
+if [ ! -v PREFIX ]; then
+    export PREFIX="$FDO_BUILD_DIR/pfx"
+fi
+
+export MESA_BUILD_DIR="$FDO_BUILD_DIR/$MESA"
+
 export VK_ICD_FILENAMES=$MESA_DIR/src/intel/vulkan/dev_icd.json
 #export ACLOCAL="aclocal -I $PREFIX/share/aclocal"
 export PKG_CONFIG_LIBDIR=$PREFIX/lib/pkgconfig
