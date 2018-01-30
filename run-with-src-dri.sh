@@ -2,6 +2,7 @@
 source $(dirname $0)/menv
 
 export LIBGL_DRIVERS_PATH=$MESA_DIR/lib
+export EGL_DRIVERS_PATH=$MESA_DIR/lib
 export GBM_DRIVERS_PATH=$MESA_DIR/lib
 
 : ${GDB=0}
