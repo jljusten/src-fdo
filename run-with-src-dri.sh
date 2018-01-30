@@ -14,7 +14,7 @@ if [ "$AUB" != "0" ]; then
     set - intel_aubdump "$@"
 fi
 
-: ${SHADER_CACHE=0}
+: ${SHADER_CACHE=1}
 if [ "$SHADER_CACHE" != "0" ]; then
     export INTEL_SHADER_CACHE=1
     export MESA_GLSL_CACHE_DISABLE=0
