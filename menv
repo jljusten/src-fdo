@@ -46,7 +46,7 @@ fi
 
 export MESA_BUILD_DIR="$FDO_BUILD_DIR/$MESA"
 
-export VK_ICD_FILENAMES=$MESA_DIR/src/intel/vulkan/dev_icd.json
+export VK_ICD_FILENAMES=$PREFIX/share/vulkan/icd.d/intel_icd.x86_64.json
 #export ACLOCAL="aclocal -I $PREFIX/share/aclocal"
 export PKG_CONFIG_LIBDIR=$PREFIX/lib/pkgconfig
 export PKG_CONFIG_PATH=$PKG_CONFIG_LIBDIR:$PREFIX/share/pkgconfig:/usr/lib/pkgconfig:/usr/lib/$LIB_ARCH-linux-gnu/pkgconfig:/usr/share/pkgconfig
