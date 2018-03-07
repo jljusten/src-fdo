@@ -29,7 +29,7 @@ fi
 if [ -f "$MESA_DIR/meson.build" ]; then
     meson \
         -Dgallium-drivers= -Ddri-drivers=i965 -Dvulkan-drivers=intel \
-        -Dtools=intel \
+        -Dtools=intel -Dbuild-tests=true \
         --prefix="$PREFIX" \
         --buildtype $MESON_BUILDTYPE \
         "$MESA_DIR" "$MESA_BUILD_DIR"
