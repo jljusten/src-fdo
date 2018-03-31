@@ -39,7 +39,8 @@ if [[ "$MESON" -ne 0 ]]; then
         --buildtype $MESON_BUILDTYPE \
         "$MESA_DIR" "$MESA_BUILD_DIR"
 else
-./autogen.sh \
+cd "$MESA_BUILD_DIR" && \
+"$MESA_DIR/autogen.sh" \
   --prefix=$PREFIX \
   --enable-gles3 --enable-gles2 --enable-gles1 \
   --enable-egl \
