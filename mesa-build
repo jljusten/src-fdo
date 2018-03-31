@@ -1,7 +1,11 @@
 #!/bin/bash
 source "$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"/menv
 
-if [ -f "$MESA_BUILD_DIR/build.ninja" ]; then
+if [[ "$MESON" -ne 0 && ! -f "$MESA_DIR/meson.build" ]]; then
+    MESON=0
+fi
+
+if [[ "$MESON" -ne 0 ]]; then
     ninja -C "$MESA_BUILD_DIR" && \
         ninja -C "$MESA_BUILD_DIR" install
     NRESULT=$?

@@ -47,6 +47,12 @@ if [ ! -v PREFIX ]; then
     export PREFIX="$FDO_BUILD_DIR/pfx"
 fi
 
+if [[ "$MESON" == "0" || "$MESON" == "false" ]]; then
+    export MESON=0
+else
+    export MESON=1
+fi
+
 export MESA_BUILD_DIR="$FDO_BUILD_DIR/$MESA"
 
 export VK_ICD_FILENAMES=$PREFIX/share/vulkan/icd.d/intel_icd.x86_64.json

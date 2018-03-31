@@ -26,7 +26,11 @@ else
   MESON_BUILDTYPE=debug
 fi
 
-if [ -f "$MESA_DIR/meson.build" ]; then
+if [[ "$MESON" -ne 0 && ! -f "$MESA_DIR/meson.build" ]]; then
+    MESON=0
+fi
+
+if [[ "$MESON" -ne 0 ]]; then
     meson \
         -Dgallium-omx=disabled -Dgallium-drivers= \
         -Ddri-drivers=i965 -Dvulkan-drivers=intel \
