@@ -38,7 +38,10 @@ else
     FDO_BUILD_DIR=$FDO_BUILD_DIR/release
 fi
 
-mkdir -p "$FDO_BUILD_DIR"
+if [ ! -d "$FDO_BUILD_DIR" ]; then
+    echo Creating fdo build dir: "$FDO_BUILD_DIR"
+    mkdir -p "$FDO_BUILD_DIR"
+fi
 
 if [ ! -v PREFIX ]; then
     export PREFIX="$FDO_BUILD_DIR/pfx"
