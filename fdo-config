@@ -12,6 +12,8 @@ fi
 
 if [[ -x $FDO/$PROJECT-config ]]; then
   $FDO/$PROJECT-config "$@"
+elif [[ -x $HOME/src/fdo/$PROJECT-config ]]; then
+  $HOME/src/fdo/$PROJECT-config "$@"
 else
   echo Unknown project: $PROJECT
 fi
