@@ -11,7 +11,8 @@ if [[ "$MESON" -ne 0 ]]; then
     NRESULT=$?
 else
     cd "$MESA_BUILD_DIR" && \
-        PATH=/usr/lib/ccache:$PATH make -j8 $*
+        PATH=/usr/lib/ccache:$PATH make -j8 $* &&
+        make -j8 install
     NRESULT=$?
 fi
 
