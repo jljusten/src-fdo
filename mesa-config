@@ -33,7 +33,7 @@ fi
 if [[ "$MESON" -ne 0 ]]; then
     meson \
         -Dgallium-omx=disabled -Dgallium-drivers= \
-        -Ddri-drivers=i965 -Dvulkan-drivers=intel \
+        -Ddri-drivers=i965,swrast -Dvulkan-drivers=intel \
         -Dtools=intel -Dbuild-tests=true \
         --prefix="$PREFIX" \
         --buildtype $MESON_BUILDTYPE \
