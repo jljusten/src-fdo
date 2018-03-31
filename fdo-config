@@ -1,5 +1,6 @@
 #!/bin/bash
-source "$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"/menv
+FDO_SCRIPT=${BASH_SOURCE[0]}
+source "$(cd "$(dirname "$(readlink -f "$FDO_SCRIPT")")" && pwd)"/menv
 
 PROJECT=`basename $PWD`
 
