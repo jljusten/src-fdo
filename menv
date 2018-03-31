@@ -9,7 +9,6 @@ then
 
 export MENV_INCLUDED=1
 
-
 export FDO="$(cd ".." && pwd)"
 
 if [[ "$FDO_SCRIPT" =~ ^.*/src/(tf|fdo)(32)?/[^/]*$ ]]; then
