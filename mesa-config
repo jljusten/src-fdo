@@ -50,7 +50,8 @@ cd "$MESA_BUILD_DIR" && \
   --enable-texture-float \
   --enable-shared-glapi \
   --enable-glx-tls \
-  --with-egl-drivers=dri2,dri3,glx --with-egl-platforms=x11,drm,wayland \
+  --with-egl-drivers=dri2,dri3,glx \
+  --with-platforms=x11,drm,wayland --with-egl-platforms=x11,drm,wayland \
   --enable-gbm \
   --disable-glu --with-gallium-drivers='' \
   --disable-gallium-egl \
