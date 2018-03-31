@@ -62,9 +62,11 @@ fi
 
 : ${FDO_PRJ="mesa"}
 
+FDO_NAME="$(basename "$FDO")"
+
 if [ -n "$DEBUG" ]; then
-  echo $FDO_PRJ configured for DEBUG
+  echo $FDO_NAME/$FDO_PRJ configured for DEBUG
 else
-  echo $FDO_PRJ configured for RELEASE
+  echo $FDO_NAME/$FDO_PRJ configured for RELEASE
 fi
 
