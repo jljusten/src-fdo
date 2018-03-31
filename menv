@@ -12,7 +12,10 @@ export MENV_INCLUDED=1
 
 export FDO="$(cd ".." && pwd)"
 
-if [[ "$FDO" =~ ^.*/fdo[^/]*$ ]]; then
+if [[ "$FDO_SCRIPT" =~ ^.*/src/(tf|fdo)(32)?/[^/]*$ ]]; then
+    export FDO="$(dirname "$FDO_SCRIPT")"
+    export FDO_PRJ=mesa
+elif [[ "$FDO" =~ ^.*/src/(tf|fdo)(32)?$ ]]; then
     export FDO_PRJ="$(basename "$(pwd)")"
     if [[ "$FDO_PRJ" =~ ^mesa.*$ ]]; then MESA="$FDO_PRJ"; fi
 else
