@@ -1,6 +1,6 @@
 #!/bin/bash
-source "$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"/menv
-#source $(dirname $0)/menv
+FDO_SCRIPT=${BASH_SOURCE[0]}
+source "$(cd "$(dirname "$(readlink -f "$FDO_SCRIPT")")" && pwd)"/menv
 
 export LIBGL_DRIVERS_PATH="$LIBGL_DRIVERS_DIR"
 export EGL_DRIVERS_PATH="$LIBGL_DRIVERS_DIR"
