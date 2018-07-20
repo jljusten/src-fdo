@@ -34,11 +34,16 @@ fi
 export MESA_DIR=$FDO/$MESA
 
 FDO_BUILD_DIR=$FDO/build
-if [ "$DEBUG" -ne 0 ]; then
-    FDO_BUILD_DIR=$FDO_BUILD_DIR/debug
-else
-    FDO_BUILD_DIR=$FDO_BUILD_DIR/release
+
+if [[ -z "$FDO_BUILD_TAG" ]]; then
+    if [ "$DEBUG" -ne 0 ]; then
+        export FDO_BUILD_TAG=debug
+    else
+        export FDO_BUILD_TAG=release
+    fi
 fi
+
+FDO_BUILD_DIR=$FDO_BUILD_DIR/$FDO_BUILD_TAG
 
 if [ ! -d "$FDO_BUILD_DIR" ]; then
     echo Creating fdo build dir: "$FDO_BUILD_DIR"
