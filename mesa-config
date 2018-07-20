@@ -35,10 +35,14 @@ if [[ "$MESON" -ne 0 && ! -f "$MESA_DIR/meson.build" ]]; then
     MESON=0
 fi
 
+DRI_DRIVERS=i965,swrast
+VULKAN_DRIVERS=intel
+GALLIUM_DRIVERS=
+
 if [[ "$MESON" -ne 0 ]]; then
     meson \
-        -Dgallium-omx=disabled -Dgallium-drivers= \
-        -Ddri-drivers=i965,swrast -Dvulkan-drivers=intel \
+        -Dgallium-omx=disabled -Dgallium-drivers=$GALLIUM_DRIVERS \
+        -Ddri-drivers=$DRI_DRIVERS -Dvulkan-drivers=$VULKAN_DRIVERS \
         -Dtools=intel -Dbuild-tests=true \
         --prefix="$PREFIX" --libdir="lib/$LIB_ARCH-linux-gnu" \
         --buildtype $MESON_BUILDTYPE \
@@ -49,7 +53,7 @@ cd "$MESA_BUILD_DIR" && \
   --prefix=$PREFIX \
   --enable-gles3 --enable-gles2 --enable-gles1 \
   --enable-egl \
-  --with-dri-drivers=i965,swrast \
+  --with-dri-drivers=$DRI_DRIVERS \
   $DEBUG_FLAG \
   $HOST_FLAG \
   --enable-texture-float \
@@ -58,9 +62,9 @@ cd "$MESA_BUILD_DIR" && \
   --with-egl-drivers=dri2,dri3,glx \
   --with-platforms=x11,drm,wayland --with-egl-platforms=x11,drm,wayland \
   --enable-gbm \
-  --disable-glu --with-gallium-drivers='' \
+  --disable-glu --with-gallium-drivers=$GALLIUM_DRIVERS \
   --disable-gallium-egl \
-  --with-vulkan-drivers=intel \
+  --with-vulkan-drivers=$VULKAN_DRIVERS \
   CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" CPPFLAGS="$CPPFLAGS" \
   "$@"
 fi
