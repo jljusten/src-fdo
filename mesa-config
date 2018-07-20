@@ -39,6 +39,14 @@ DRI_DRIVERS=i965,swrast
 VULKAN_DRIVERS=intel
 GALLIUM_DRIVERS=
 
+case $FDO_BUILD_TAG in
+    iris)
+        DRI_DRIVERS=
+        VULKAN_DRIVERS=
+        GALLIUM_DRIVERS=iris
+        ;;
+esac
+
 if [[ "$MESON" -ne 0 ]]; then
     meson \
         -Dgallium-omx=disabled -Dgallium-drivers=$GALLIUM_DRIVERS \
