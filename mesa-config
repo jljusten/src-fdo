@@ -15,6 +15,11 @@ if [[ "$DEBUG" == "0" ]]; then
   unset DEBUG
 fi
 
+: ${MESON=1}
+if [ ! -f "$MESA_DIR/meson.build" ]; then
+  MESON=0
+fi
+
 if [ -z "$DEBUG" ]; then
   D_CFLAGS='-O2 -DNDEBUG --debug'
   export CFLAGS="$CFLAGS $D_CFLAGS"
