@@ -80,4 +80,3 @@ if [ -n "$DEBUG" ]; then
 else
   echo $FDO_NAME/$FDO_PRJ configured for RELEASE
 fi
-
