@@ -48,6 +48,10 @@ case $FDO_BUILD_TAG in
 esac
 
 if [[ "$MESON" -ne 0 ]]; then
+    if [[ -d "$MESA_BUILD_DIR" && ! -z "$MESA_BUILD_DIR" ]]; then
+        echo "Removing old meson build dir: $MESA_BUILD_DIR"
+        rm -r "$MESA_BUILD_DIR"
+    fi
     meson \
         -Dgallium-omx=disabled -Dgallium-drivers=$GALLIUM_DRIVERS \
         -Ddri-drivers=$DRI_DRIVERS -Dvulkan-drivers=$VULKAN_DRIVERS \
