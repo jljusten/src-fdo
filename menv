@@ -30,13 +30,21 @@ else
     export LIB_ARCH=x86_64
 fi
 
-: ${MESA="mesa"}
+if [[ -z "$MESA" ]]; then
+    if [[ "$(pwd)" =~ /iris ]]; then
+        MESA=iris
+    else
+        MESA=mesa
+    fi
+fi
 export MESA_DIR=$FDO/$MESA
 
 FDO_BUILD_DIR=$FDO/build
 
 if [[ -z "$FDO_BUILD_TAG" ]]; then
-    if [ "$DEBUG" -ne 0 ]; then
+    if [ "$MESA" == iris ]; then
+        export FDO_BUILD_TAG=iris
+    elif [ "$DEBUG" -ne 0 ]; then
         export FDO_BUILD_TAG=debug
     else
         export FDO_BUILD_TAG=release
