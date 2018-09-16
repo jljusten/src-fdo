@@ -13,7 +13,7 @@ fi
 
 : ${AUB=0}
 if [ "$AUB" != "0" ]; then
-    set - intel_aubdump "$@"
+    set - intel_dump_gpu "$@"
 fi
 
 : ${SHADER_CACHE=1}
