@@ -1,6 +1,19 @@
-source $HOME/src/fdo/menv
-export PIGLIT_SOURCE_DIR=$HOME/src/fdo/piglit
-rm $PIGLIT_SOURCE_DIR/CMakeCache.txt
+#!/bin/bash
+source "$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"/menv
+
+export PIGLIT_BUILD_DIR="$FDO_BUILD_DIR/piglit"
+export PIGLIT_SOURCE_DIR=$FDO/piglit
+
+if [[ -d "$PIGLIT_BUILD_DIR" && ! -z "$PIGLIT_BUILD_DIR" ]]; then
+    echo "Removing old piglit build dir: $PIGLIT_BUILD_DIR"
+    rm -r "$PIGLIT_BUILD_DIR"
+fi
+
+if [[ ! -d "$PIGLIT_BUILD_DIR" && ! -z "$PIGLIT_BUILD_DIR" ]]; then
+    mkdir -p "$PIGLIT_BUILD_DIR"
+fi
+
+cd "$PIGLIT_BUILD_DIR"
 cmake \
   -DCMAKE_LIBRARY_PATH=$(echo $LIBRARY_PATH | sed 's/:/;/g') \
   -DCMAKE_BUILD_TYPE=Debug \
@@ -13,3 +26,5 @@ cmake \
 
 #  -DBUILD_GLES1_TESTS=1 -DBUILD_GLES2_TESTS=1 \
 #  -DUSE_WAFFLE=1 \
+
+echo "$PIGLIT_BUILD_DIR configured"

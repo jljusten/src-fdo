@@ -51,7 +51,7 @@ if [[ -z "$FDO_BUILD_TAG" ]]; then
     fi
 fi
 
-FDO_BUILD_DIR=$FDO_BUILD_DIR/$FDO_BUILD_TAG
+export FDO_BUILD_DIR=$FDO_BUILD_DIR/$FDO_BUILD_TAG
 
 if [ ! -d "$FDO_BUILD_DIR" ]; then
     echo Creating fdo build dir: "$FDO_BUILD_DIR"
