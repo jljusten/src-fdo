@@ -1,16 +1,27 @@
 #!/bin/bash
 source "$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"/menv
 
-export PIGLIT_BUILD_DIR="$FDO_BUILD_DIR/piglit"
 export PIGLIT_SOURCE_DIR=$FDO/piglit
 
-if [[ -d "$PIGLIT_BUILD_DIR" && ! -z "$PIGLIT_BUILD_DIR" ]]; then
-    echo "Removing old piglit build dir: $PIGLIT_BUILD_DIR"
-    rm -r "$PIGLIT_BUILD_DIR"
+if [[ -v OUT_OF_TREE && ("$OUT_OF_TREE" == "" || "$OUT_OF_TREE" == "1" || \
+                         "$OUT_OF_TREE" == "true") ]]; then
+    OUT_OF_TREE=1
+else
+    OUT_OF_TREE=0
 fi
 
-if [[ ! -d "$PIGLIT_BUILD_DIR" && ! -z "$PIGLIT_BUILD_DIR" ]]; then
-    mkdir -p "$PIGLIT_BUILD_DIR"
+if [[ "$OUT_OF_TREE" -ne 0 ]]; then
+    export PIGLIT_BUILD_DIR="$FDO_BUILD_DIR/piglit"
+    if [[ -d "$PIGLIT_BUILD_DIR" && ! -z "$PIGLIT_BUILD_DIR" ]]; then
+        echo "Removing old piglit build dir: $PIGLIT_BUILD_DIR"
+        rm -r "$PIGLIT_BUILD_DIR"
+    fi
+
+    if [[ ! -d "$PIGLIT_BUILD_DIR" && ! -z "$PIGLIT_BUILD_DIR" ]]; then
+        mkdir -p "$PIGLIT_BUILD_DIR"
+    fi
+else
+    export PIGLIT_BUILD_DIR="$PIGLIT_SOURCE_DIR"
 fi
 
 cd "$PIGLIT_BUILD_DIR"
