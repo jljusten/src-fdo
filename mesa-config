@@ -87,8 +87,13 @@ fi
 
 FDO_NAME="$(basename "$FDO")"
 
-if [ -n "$DEBUG" ]; then
-  echo $FDO_NAME/$FDO_PRJ configured for DEBUG
+if [[ $? -eq 0 ]]; then
+    RES=configured
 else
-  echo $FDO_NAME/$FDO_PRJ configured for RELEASE
+    RES="config failed"
+fi
+if [ -n "$DEBUG" ]; then
+  echo $FDO_NAME/$FDO_PRJ $RES for DEBUG
+else
+  echo $FDO_NAME/$FDO_PRJ $RES for RELEASE
 fi
