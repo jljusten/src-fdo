@@ -1,5 +1,21 @@
-source $HOME/src/fdo/menv
-CFLAGS='' CXXFLAGS='' \
-./autogen.sh \
-  --prefix=$PREFIX \
-  --enable-nouveau-experimental-api --without-cairo
+#!/bin/bash
+source "$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"/menv
+
+if [ -z "$DEBUG" ]; then
+  MESON_BUILDTYPE=release
+else
+  MESON_BUILDTYPE=debug
+fi
+
+export DRM_DIR=$FDO/drm
+export DRM_BUILD_DIR="$FDO_BUILD_DIR/drm"
+
+if [[ -d "$DRM_BUILD_DIR" && ! -z "$DRM_BUILD_DIR" ]]; then
+    echo "Removing old meson build dir: $DRM_BUILD_DIR"
+    rm -r "$DRM_BUILD_DIR"
+fi
+
+meson \
+    --prefix="$PREFIX" --libdir="lib/$LIB_ARCH-linux-gnu" \
+    --buildtype $MESON_BUILDTYPE \
+    "$DRM_DIR" "$DRM_BUILD_DIR"
