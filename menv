@@ -31,11 +31,7 @@ else
 fi
 
 if [[ -z "$MESA" ]]; then
-    if [[ "$(pwd)" =~ /iris ]]; then
-        MESA=iris
-    else
-        MESA=mesa
-    fi
+    MESA=mesa
 fi
 export MESA_DIR=$FDO/$MESA
 

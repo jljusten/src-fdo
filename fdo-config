@@ -6,7 +6,7 @@ PROJECT=`basename $PWD`
 
 : ${FDO=".."}
 
-if [[ "$PROJECT" =~ ^(mesa|iris).*$ ]]; then
+if [[ "$PROJECT" =~ ^mesa.*$ ]]; then
 PROJECT=mesa
 fi
 
