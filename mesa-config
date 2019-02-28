@@ -64,25 +64,27 @@ if [[ "$MESON" -ne 0 ]]; then
         --buildtype $MESON_BUILDTYPE \
         "$MESA_DIR" "$MESA_BUILD_DIR"
 else
-cd "$MESA_BUILD_DIR" && \
-"$MESA_DIR/autogen.sh" \
-  --prefix=$PREFIX \
-  --enable-gles3 --enable-gles2 --enable-gles1 \
-  --enable-egl \
-  --with-dri-drivers=$DRI_DRIVERS \
-  $DEBUG_FLAG \
-  $HOST_FLAG \
-  --enable-texture-float \
-  --enable-shared-glapi \
-  --enable-glx-tls \
-  --with-egl-drivers=dri2,dri3,glx \
-  --with-platforms=x11,drm,wayland --with-egl-platforms=x11,drm,wayland \
-  --enable-gbm \
-  --disable-glu --with-gallium-drivers=$GALLIUM_DRIVERS \
-  --disable-gallium-egl \
-  --with-vulkan-drivers=$VULKAN_DRIVERS \
-  CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" CPPFLAGS="$CPPFLAGS" \
-  "$@"
+    mkdir -p "$MESA_BUILD_DIR"
+    cd "$MESA_BUILD_DIR"
+    "$MESA_DIR/autogen.sh" \
+        --prefix=$PREFIX \
+        --enable-gles3 --enable-gles2 --enable-gles1 \
+        --enable-egl \
+        --with-dri-drivers=$DRI_DRIVERS \
+        $DEBUG_FLAG \
+        $HOST_FLAG \
+        --enable-texture-float \
+        --enable-shared-glapi \
+        --enable-glx-tls \
+        --with-egl-drivers=dri2,dri3,glx \
+        --with-platforms=x11,drm,wayland --with-egl-platforms=x11,drm,wayland \
+        --enable-gbm \
+        --disable-glu --with-gallium-drivers=$GALLIUM_DRIVERS \
+        --disable-gallium-egl \
+        --with-vulkan-drivers=$VULKAN_DRIVERS \
+        CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" CPPFLAGS="$CPPFLAGS" \
+        --enable-autotools \
+        "$@"
 fi
 
 #  --with-egl-platforms=x11,wayland,drm --enable-gbm --disable-gallium-egl
