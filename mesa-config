@@ -37,7 +37,11 @@ fi
 
 DRI_DRIVERS=i965,swrast
 VULKAN_DRIVERS=intel
-GALLIUM_DRIVERS=iris
+if [[ "$MESON" -ne 0 ]]; then
+    GALLIUM_DRIVERS=iris
+else
+    GALLIUM_DRIVERS=
+fi
 
 if [[ "$MESON" -ne 0 ]]; then
     if [[ -d "$MESA_BUILD_DIR" && ! -z "$MESA_BUILD_DIR" ]]; then
