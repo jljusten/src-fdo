@@ -1,17 +1,20 @@
 #!/bin/bash
 source "$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"/menv
 
-if [[ "$MESON" -ne 0 && ! -f "$MESA_DIR/meson.build" ]]; then
-    MESON=0
+if [[ -f "$MESA_BUILD_DIR/build.ninja" ]]; then
+    NINJA=1
+else
+    NINJA=0
 fi
 
-if [[ "$MESON" -ne 0 ]]; then
-    ninja -C "$MESA_BUILD_DIR" && \
+
+if [[ "$NINJA" -ne 0 ]]; then
+    ninja -C "$MESA_BUILD_DIR" "$@" && \
         ninja -C "$MESA_BUILD_DIR" install
     NRESULT=$?
 else
     cd "$MESA_BUILD_DIR" && \
-        PATH=/usr/lib/ccache:$PATH make -j8 $* &&
+        PATH=/usr/lib/ccache:$PATH make -j8 "$@" &&
         make -j8 install
     NRESULT=$?
 fi
