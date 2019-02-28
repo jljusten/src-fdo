@@ -43,6 +43,13 @@ else
     GALLIUM_DRIVERS=
 fi
 
+# Since we may `rm -r` MESA_BUILD_DIR, let's add some safety
+if [[ -z "$MESA_BUILD_DIR" || ! "$MESA_BUILD_DIR" =~ /build/ ]]; then
+    echo "Error! `build` is not found in MESA_BUILD_DIR env-var!"
+    echo "MESA_BUILD_DIR: $MESA_BUILD_DIR"
+    exit 1
+fi
+
 if [[ "$MESON" -ne 0 ]]; then
     if [[ -d "$MESA_BUILD_DIR" && ! -z "$MESA_BUILD_DIR" ]]; then
         echo "Removing old meson build dir: $MESA_BUILD_DIR"
