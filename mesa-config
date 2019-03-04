@@ -62,7 +62,7 @@ if [[ "$MESON" -ne 0 ]]; then
         -Dtools=intel -Dbuild-tests=true \
         -Dvulkan-overlay-layer=true \
         --prefix="$PREFIX" --libdir="lib/$LIB_ARCH-linux-gnu" \
-        --buildtype $MESON_BUILDTYPE \
+        --buildtype=$MESON_BUILDTYPE \
         "$MESA_DIR" "$MESA_BUILD_DIR"
 else
     mkdir -p "$MESA_BUILD_DIR"
