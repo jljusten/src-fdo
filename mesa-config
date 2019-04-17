@@ -59,7 +59,7 @@ if [[ "$MESON" -ne 0 ]]; then
     meson \
         -Dgallium-omx=disabled -Dgallium-drivers=$GALLIUM_DRIVERS \
         -Ddri-drivers=$DRI_DRIVERS -Dvulkan-drivers=$VULKAN_DRIVERS \
-        -Dtools=intel -Dbuild-tests=true \
+        -Dtools=intel -Dbuild-tests=true -Dinstall-intel-gpu-tests=true \
         -Dvulkan-overlay-layer=true \
         --prefix="$PREFIX" --libdir="lib/$LIB_ARCH-linux-gnu" \
         --buildtype=$MESON_BUILDTYPE \
