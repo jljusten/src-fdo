@@ -16,6 +16,17 @@ if [ "$AUB" != "0" ]; then
     set - intel_dump_gpu "$@"
 fi
 
+if [ -v MESA_GLSL_CACHE_DISABLE ] && [ ! -v SHADER_CACHE ]; then
+    case "$MESA_GLSL_CACHE_DISABLE" in
+        1|true|on)
+            SHADER_CACHE=0
+            ;;
+        *)
+            SHADER_CACHE=1
+            ;;
+    esac
+fi
+
 : ${SHADER_CACHE=1}
 if [ "$SHADER_CACHE" != "0" ]; then
     export INTEL_SHADER_CACHE=1
