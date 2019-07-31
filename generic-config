@@ -1,2 +1,60 @@
-source $HOME/src/fdo/menv
-./autogen.sh --prefix=$PREFIX $*
+#!/bin/bash
+source "$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"/menv
+
+if [[ -z "$FDO_PRJ" ]]; then
+    echo Unknown project
+    exit 1
+fi
+
+if [[ "$DEBUG" == "0" ]]; then
+  unset DEBUG
+fi
+
+export PRJ_SOURCE_DIR="$FDO/$FDO_PRJ"
+export PRJ_BUILD_DIR="$FDO_BUILD_DIR/$FDO_PRJ"
+
+: ${MESON=1}
+if [ ! -f "$PRJ_SOURCE_DIR/meson.build" ]; then
+  MESON=0
+fi
+
+if [ -z "$DEBUG" ]; then
+  D_CFLAGS='-O2 -DNDEBUG --debug'
+  export CFLAGS="$CFLAGS $D_CFLAGS"
+  export CXXFLAGS="$CXXFLAGS $D_CFLAGS"
+  export CPPFLAGS="$CPPFLAGS $D_CFLAGS"
+  MESON_BUILDTYPE=release
+else
+  export DEBUG_FLAG=--enable-debug
+  MESON_BUILDTYPE=debug
+fi
+
+if [[ "$MESON" -ne 0 ]]; then
+    meson \
+        --prefix="$PREFIX" --libdir="lib/$LIB_ARCH-linux-gnu" \
+        --buildtype=$MESON_BUILDTYPE \
+        "$PRJ_SOURCE_DIR" "$PRJ_BUILD_DIR" \
+        "$@"
+else
+    mkdir -p "$PRJ_BUILD_DIR"
+    cd "$PRJ_BUILD_DIR"
+    "$PRJ_SOURCE_DIR/autogen.sh" \
+        --prefix=$PREFIX \
+        $DEBUG_FLAG \
+        $HOST_FLAG \
+        CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" CPPFLAGS="$CPPFLAGS" \
+        "$@"
+fi
+
+FDO_NAME="$(basename "$FDO")"
+
+if [[ $? -eq 0 ]]; then
+    RES=configured
+else
+    RES="config failed"
+fi
+if [ -n "$DEBUG" ]; then
+  echo $FDO_NAME/$FDO_PRJ $RES for DEBUG
+else
+  echo $FDO_NAME/$FDO_PRJ $RES for RELEASE
+fi
