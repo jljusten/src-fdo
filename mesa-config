@@ -61,6 +61,7 @@ if [[ "$MESON" -ne 0 ]]; then
         -Ddri-drivers=$DRI_DRIVERS -Dvulkan-drivers=$VULKAN_DRIVERS \
         -Dtools=intel -Dbuild-tests=true -Dinstall-intel-gpu-tests=true \
         -Dvulkan-overlay-layer=true \
+        --build.pkg-config-path "$PKG_CONFIG_PATH" \
         --prefix="$PREFIX" --libdir="lib/$LIB_ARCH-linux-gnu" \
         --buildtype=$MESON_BUILDTYPE \
         "$MESA_DIR" "$MESA_BUILD_DIR"
