@@ -66,23 +66,25 @@ fi
 
 export MESA_BUILD_DIR="$FDO_BUILD_DIR/$MESA"
 
+TRIPLE=$LIB_ARCH-linux-gnu
+
 export VK_ICD_FILENAMES=$PREFIX/share/vulkan/icd.d/intel_icd.x86_64.json
 export VK_LAYER_PATH=$PREFIX/share/vulkan/explicit_layer.d
 #export ACLOCAL="aclocal -I $PREFIX/share/aclocal"
 SAVE_PKG_CONFIG_PATH=$PKG_CONFIG_PATH
 export PKG_CONFIG_LIBDIR=$PREFIX/lib/pkgconfig
-export PKG_CONFIG_PATH=$PKG_CONFIG_LIBDIR:$PREFIX/share/pkgconfig:/usr/lib/pkgconfig:/usr/lib/$LIB_ARCH-linux-gnu/pkgconfig:/usr/share/pkgconfig:$PKG_CONFIG_PATH
+export PKG_CONFIG_PATH=$PKG_CONFIG_LIBDIR:$PREFIX/share/pkgconfig:/usr/lib/pkgconfig:/usr/lib/$TRIPLE/pkgconfig:/usr/share/pkgconfig:$PKG_CONFIG_PATH
 if [ ! -z "$SAVE_PKG_CONFIG_PATH" ]; then
     export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$SAVE_PKG_CONFIG_PATH
 fi
 SAVE_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=$MESA_DIR/lib:$PREFIX/lib/$LIB_ARCH-linux-gnu:$PREFIX/lib:$PREFIX/lib/dri:/usr/lib:/usr/lib/$LIB_ARCH-linux-gnu
+export LD_LIBRARY_PATH=$MESA_DIR/lib:$PREFIX/lib/$TRIPLE:$PREFIX/lib:$PREFIX/lib/dri:/usr/lib:/usr/lib/$TRIPLE
 export LD_LIBRARY_PATH=$FDO/LoaderAndTools/loader:$LD_LIBRARY_PATH
 if [ ! -z "$SAVE_LD_LIBRARY_PATH" ]; then
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SAVE_LD_LIBRARY_PATH
 fi
 export LIBRARY_PATH=$LD_LIBRARY_PATH
-export LIBGL_DRIVERS_DIR=$PREFIX/lib/$LIB_ARCH-linux-gnu/dri
+export LIBGL_DRIVERS_DIR=$PREFIX/lib/$TRIPLE/dri
 export DRI_DRIVER_SEARCH_DIR=$LIBGL_DRIVERS_DIR
 export EGL_DRIVERS_PATH=$LIBGL_DRIVERS_DIR
 #export TRACE_LIBGL=$PREFIX/lib/libGL.so
