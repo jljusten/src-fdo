@@ -35,10 +35,10 @@ if [[ "$MESON" -ne 0 && ! -f "$MESA_DIR/meson.build" ]]; then
     MESON=0
 fi
 
-DRI_DRIVERS=i965,swrast
+DRI_DRIVERS=i965
 VULKAN_DRIVERS=intel
 if [[ "$MESON" -ne 0 ]]; then
-    GALLIUM_DRIVERS=iris
+    GALLIUM_DRIVERS=iris,swrast
 else
     GALLIUM_DRIVERS=
 fi
