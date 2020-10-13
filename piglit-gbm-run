@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 source /home/jljusten/src/fdo/menv
 #PIGLIT_PLATFORM=gbm

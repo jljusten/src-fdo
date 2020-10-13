@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 FDO_SCRIPT=${BASH_SOURCE[0]}
 source "$(cd "$(dirname "$(readlink -f "$FDO_SCRIPT")")" && pwd)"/menv
 

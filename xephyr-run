@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 XEPHYR=$HOME/src/fdo/xorg-xserver/hw/kdrive/ephyr/Xephyr
 XEPHYR=Xephyr

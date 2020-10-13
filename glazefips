@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/usr/bin/env bash
 BASE_DIR=$HOME/src/fdo
 source $BASE_DIR/menv
 
