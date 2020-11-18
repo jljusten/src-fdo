@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Jordan Justen : this file is public domain
+
+if [ ! -v PREFIX -a ! -z "$1" ]; then
+    export PREFIX="$1"
+fi
+
+source "$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"/menv
+
+set -e
+
+meson configure "$MESA_BUILD_DIR" -Dprefix="$PREFIX"
+
+echo "$MESA_BUILD_DIR" prefix set to "$PREFIX"
