@@ -20,6 +20,7 @@ ministat/
 pfx/
 piglit/
 randrproto/
+results/
 shader-db/
 tasks/
 tmp/
