@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Jordan Justen : this file is public domain
+
 BASE_DIR=$HOME/src/fdo
 source $BASE_DIR/menv
 

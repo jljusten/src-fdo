@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Jordan Justen : this file is public domain
 
 if [ ! -v DEBUG ]; then
   DEBUG=1

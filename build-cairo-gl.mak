@@ -1,3 +1,5 @@
+# Jordan Justen : this file is public domain
+
 all:
 	cd pixman && \
 	  ./autogen.sh --prefix=$(WLD) && \

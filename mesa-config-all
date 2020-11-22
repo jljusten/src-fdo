@@ -1,3 +1,5 @@
+# Jordan Justen : this file is public domain
+
 source $HOME/src/fdo/menv
 #ARCHES="--enable-32-bit --enable-64-bit"
 

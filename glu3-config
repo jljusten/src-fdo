@@ -1,2 +1,4 @@
+# Jordan Justen : this file is public domain
+
 source $HOME/src/fdo/menv
 ./autogen.sh --prefix=$PREFIX --with-winsys=glx

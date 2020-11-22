@@ -1,3 +1,4 @@
+# Jordan Justen : this file is public domain
 
 dirs = ('glproto', 'drm', 'macros', 'dri2proto', 'mesa')
 

@@ -1,3 +1,5 @@
+# Jordan Justen : this file is public domain
+
 source $HOME/src/fdo/menv
 export WAFFLE_SOURCE_DIR=$HOME/src/fdo/waffle
 rm $WAFFLE_SOURCE_DIR/CMakeCache.txt

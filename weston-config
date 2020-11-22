@@ -1,1 +1,3 @@
+# Jordan Justen : this file is public domain
+
 ./autogen.sh --prefix=/home/jljusten/src/fdo/pfx --disable-wcap-tools --disable-setuid-install

@@ -1,3 +1,5 @@
+# Jordan Justen : this file is public domain
+
 source $HOME/src/fdo/menv
 CFLAGS='' CXXFLAGS='' \
 ./autogen.sh \

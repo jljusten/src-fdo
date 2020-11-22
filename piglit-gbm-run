@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Jordan Justen : this file is public domain
 
 source /home/jljusten/src/fdo/menv
 #PIGLIT_PLATFORM=gbm

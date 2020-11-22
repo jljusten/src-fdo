@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Jordan Justen : this file is public domain
 
 XEPHYR=$HOME/src/fdo/xorg-xserver/hw/kdrive/ephyr/Xephyr
 XEPHYR=Xephyr

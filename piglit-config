@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Jordan Justen : this file is public domain
+
 source "$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"/menv
 
 export PIGLIT_SOURCE_DIR=$FDO/piglit

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Jordan Justen : this file is public domain
+
 FDO_SCRIPT=${BASH_SOURCE[0]}
 source "$(cd "$(dirname "$(readlink -f "$FDO_SCRIPT")")" && pwd)"/menv
 

@@ -1,3 +1,5 @@
+# Jordan Justen : this file is public domain
+
 DIRS=glproto drm macros dri2proto mesa
 
 all: $(DIRS)

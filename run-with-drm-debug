@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Jordan Justen : this file is public domain
 
 echo -n 15 | sudo tee /sys/module/drm/parameters/debug
 

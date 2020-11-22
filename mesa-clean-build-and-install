@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Jordan Justen : this file is public domain
+
 source $HOME/src/fdo/menv
 
 cd $MESA_DIR && \
