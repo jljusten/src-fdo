@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Jordan Justen : this file is public domain
+
+HERE="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
+
+set -e
+
+if [ -x "$HERE/crucible/bin/crucible" ]; then
+    CRUCIBLE="$HERE/crucible"
+else
+    CRUCIBLE="$HOME/src/fdo/crucible"
+fi
+BIN="$CRUCIBLE/bin/crucible"
+
+if [ ! -x "$BIN" ]; then
+    echo "$BIN is not executable"
+    exit 1
+fi
+
+if [ ! -z "$START" ]; then
+    if [ -z "$END" ]; then
+	END=$(($START + 50))
+    fi
+    RANGE=-$START-$END
+    TESTS="$($BIN ls-tests | grep '^func' | head -$END | tail +$(($START+1)))"
+fi
+
+TIMENOW=`date +%F-%T`
+LOG_DIR="$HERE/results"/`hostname`
+mkdir -p "$LOG_DIR"
+LOG="$LOG_DIR/crucible$RANGE-$TIMENOW.log"
+
+# Required
+CMD_ENV="$HERE/run-with-dev-mesa stdbuf -o L"
+CMD="$BIN run $TESTS"
+
+cd $BIN_DIR
+echo $CMD "$@" > $LOG
+time nice $CMD_ENV $CMD "$@" |& tee -a $LOG | \
+    grep -E -e '^crucible: (pass|fail|lost)' \
+            -e '^crucible: info   : (ran|pass|fail|skip|lost)'
