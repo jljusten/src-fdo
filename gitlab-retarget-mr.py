@@ -37,8 +37,8 @@ class App:
             self.token = self.args.token
         elif self.args.ask_token:
             import getpass
-            print("Enter api token from "
-                  "https://gitlab.com/-/profile/personal_access_tokens")
+            token_url = gl_url + '/-/profile/personal_access_tokens'
+            print("Enter api token from", token_url)
             self.token = getpass.getpass('Token:')
         else:
             self.token = None
