@@ -66,7 +66,7 @@ class App:
                 glp = gl.projects.get(p.id)
                 break
         assert glp is not None
-        assert glp.path_with_namespace == input_project
+        assert glp.path_with_namespace.lower() == input_project.lower()
 
         # Order by oldest updated first. This will mean the most
         # recently updated merge-requests will be changed last, and
