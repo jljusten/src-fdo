@@ -11,6 +11,9 @@ git@gitlab.freedesktop.org:mesa/piglit.git
 https://gitlab.freedesktop.org/mesa/drm.git
 git@gitlab.freedesktop.org:mesa/drm.git
 
+https://gitlab.freedesktop.org/mesa/kmscube.git
+git@gitlab.freedesktop.org:mesa/kmscube.git
+
 https://gitlab.freedesktop.org/mesa/shader-db.git
 git@gitlab.freedesktop.org:mesa/shader-db.git
 
