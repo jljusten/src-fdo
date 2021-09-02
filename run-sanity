@@ -1,0 +1,36 @@
+#!/bin/bash
+# Jordan Justen : this file is public domain
+
+HERE="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
+
+set -e
+
+if [ -x "$HERE/piglit/piglit" ]; then
+    PIGLIT="$HERE/piglit"
+else
+    PIGLIT="$HOME/src/fdo/piglit"
+fi
+BIN="$PIGLIT/piglit"
+
+if [ ! -x "$BIN" ]; then
+    echo "$BIN is not executable"
+    exit 1
+fi
+
+export vblank_mode=0
+export NIR_VALIDATE=0
+unset DISPLAY
+
+TIMENOW=`date +%F-%T`
+LOG_DIR="$HERE/results"/`hostname`
+mkdir -p "$LOG_DIR"
+LOG=$LOG_DIR/sanity-$TIMENOW
+TESTS="sanity"
+
+# Required
+CMD_ENV="$HOME/src/fdo/run-with-dev-mesa"
+CMD="$BIN run $TESTS $LOG"
+
+cd $PIGLIT
+echo $CMD "$@"
+time nice $CMD_ENV $CMD "$@"
