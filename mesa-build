@@ -11,7 +11,7 @@ fi
 
 
 if [[ "$NINJA" -ne 0 ]]; then
-    ninja -C "$MESA_BUILD_DIR" "$@" && \
+    nice -n 20 ninja -C "$MESA_BUILD_DIR" "$@" && \
         ninja -C "$MESA_BUILD_DIR" install
     NRESULT=$?
 else
