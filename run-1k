@@ -21,7 +21,7 @@ export vblank_mode=0
 export NIR_VALIDATE=0
 unset DISPLAY
 
-TIMENOW=`date +%F-%T`
+TIMENOW=`date +%y%m%d-%H%M%S`
 LOG_DIR="$HERE/results"/`hostname`
 mkdir -p "$LOG_DIR"
 LOG=$LOG_DIR/1k-$TIMENOW
