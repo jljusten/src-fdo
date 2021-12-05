@@ -42,7 +42,20 @@ if [[ "$MESON" -ne 0 && ! -f "$MESA_DIR/meson.build" ]]; then
     MESON=0
 fi
 
-DRI_DRIVERS=i965
+if [[ -d "$MESA_DIR/src/mesa/drivers/dri/i965" ]]; then
+    DRI_DRIVERS=i965
+else
+    DRI_DRIVERS=
+fi
+
+if [ -n "$DRI_DRIVERS" ]; then
+    if [[ "$MESON" -ne 0 ]]; then
+        DRI_DRIVERS=-Ddri-drivers=$DRI_DRIVERS
+    else
+        DRI_DRIVERS=--with-dri-drivers=$DRI_DRIVERS
+    fi
+fi
+
 VULKAN_DRIVERS=intel
 if [[ "$MESON" -ne 0 ]]; then
     GALLIUM_DRIVERS=iris,swrast
@@ -68,7 +81,7 @@ fi
 if [[ "$MESON" -ne 0 ]]; then
     meson \
         -Dgallium-omx=disabled -Dgallium-drivers=$GALLIUM_DRIVERS \
-        -Ddri-drivers=$DRI_DRIVERS -Dvulkan-drivers=$VULKAN_DRIVERS \
+        $DRI_DRIVERS -Dvulkan-drivers=$VULKAN_DRIVERS \
         -Dtools=intel -Dbuild-tests=true -Dinstall-intel-gpu-tests=true \
         -Dvulkan-overlay-layer=true -Dglvnd=true -Dlibunwind=false \
         -Dopencl-spirv=true -Dgallium-opencl=icd \
@@ -83,7 +96,7 @@ else
         --prefix=$PREFIX \
         --enable-gles3 --enable-gles2 --enable-gles1 \
         --enable-egl \
-        --with-dri-drivers=$DRI_DRIVERS \
+        $DRI_DRIVERS \
         $DEBUG_FLAG \
         $HOST_FLAG \
         --enable-texture-float \
