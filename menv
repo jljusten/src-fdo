@@ -8,6 +8,14 @@ fi
 if [[ -z "$MENV_INCLUDED" ]];
 then
 
+# Nix sets these which causes meson to ignore ccache
+if [ "$CC" == "gcc" ]; then
+    unset CC
+fi
+if [ "$CXX" == "g++" ]; then
+    unset CXX
+fi
+
 export MENV_INCLUDED=1
 
 export FDO="$(cd ".." && pwd)"
