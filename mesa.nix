@@ -2,7 +2,7 @@
 with import <nixpkgs> {};
 mesa.overrideAttrs(
 	oldAttrs : {
-		buildInputs = [ libclc spirv-llvm-translator spirv-tools ] ++
+		buildInputs = [ ccache libclc spirv-llvm-translator spirv-tools ] ++
 			      oldAttrs.buildInputs;
 	}
 )
