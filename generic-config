@@ -31,11 +31,19 @@ else
   MESON_BUILDTYPE=debug
 fi
 
+MESON_CROSS="$FDO_BUILD_DIR/meson-cross"
+if [[ -f "$FDO_BUILD_DIR/meson-cross" ]]; then
+    MESON_CROSS="--cross=$MESON_CROSS"
+else
+    unset MESON_CROSS
+fi
+
 if [[ "$MESON" -ne 0 ]]; then
     meson \
         --prefix="$PREFIX" --libdir="lib/$LIB_ARCH-linux-gnu" \
         --buildtype=$MESON_BUILDTYPE \
         "$PRJ_SOURCE_DIR" "$PRJ_BUILD_DIR" \
+        $MESON_CROSS \
         "$@"
 else
     mkdir -p "$PRJ_BUILD_DIR"
