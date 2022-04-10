@@ -77,7 +77,7 @@ export MESA_BUILD_DIR="$FDO_BUILD_DIR/$MESA"
 
 TRIPLE=$LIB_ARCH-linux-gnu
 
-export VK_ICD_FILENAMES=$PREFIX/share/vulkan/icd.d/intel_icd.x86_64.json
+export VK_ICD_FILENAMES=$PREFIX/share/vulkan/icd.d/intel_icd.$LIB_ARCH.json
 export VK_LAYER_PATH=$PREFIX/share/vulkan/explicit_layer.d
 #export ACLOCAL="aclocal -I $PREFIX/share/aclocal"
 SAVE_PKG_CONFIG_PATH=$PKG_CONFIG_PATH
