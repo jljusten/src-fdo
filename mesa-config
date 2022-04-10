@@ -73,6 +73,13 @@ if [[ -z "$MESA_BUILD_DIR" || ! "$MESA_BUILD_DIR" =~ /build/ ]]; then
     exit 1
 fi
 
+MESON_CROSS="$FDO_BUILD_DIR/meson-cross"
+if [[ -f "$FDO_BUILD_DIR/meson-cross" ]]; then
+    MESON_CROSS="--cross=$MESON_CROSS"
+else
+    unset MESON_CROSS
+fi
+
 if [[ -d "$MESA_BUILD_DIR" && ! -z "$MESA_BUILD_DIR" ]]; then
     echo "Removing old build dir: $MESA_BUILD_DIR"
     rm -r "$MESA_BUILD_DIR"
@@ -88,6 +95,7 @@ if [[ "$MESON" -ne 0 ]]; then
         --build.pkg-config-path "$PKG_CONFIG_PATH" \
         --prefix="$PREFIX" --libdir="lib/$LIB_ARCH-linux-gnu" \
         --buildtype=$MESON_BUILDTYPE \
+        $MESON_CROSS \
         "$MESA_DIR" "$MESA_BUILD_DIR"
 else
     mkdir -p "$MESA_BUILD_DIR"
