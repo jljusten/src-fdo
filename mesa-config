@@ -90,7 +90,7 @@ if [[ "$MESON" -ne 0 ]]; then
         -Dgallium-omx=disabled -Dgallium-drivers=$GALLIUM_DRIVERS \
         $DRI_DRIVERS -Dvulkan-drivers=$VULKAN_DRIVERS \
         -Dtools=intel -Dbuild-tests=true -Dinstall-intel-gpu-tests=true \
-        -Dvulkan-overlay-layer=true -Dglvnd=true -Dlibunwind=false \
+        -Dglvnd=true -Dlibunwind=false \
         -Dopencl-spirv=true -Dgallium-opencl=icd \
         --build.pkg-config-path "$PKG_CONFIG_PATH" \
         --prefix="$PREFIX" --libdir="lib/$LIB_ARCH-linux-gnu" \
