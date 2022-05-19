@@ -32,10 +32,10 @@ fi
 : ${SHADER_CACHE=1}
 if [ "$SHADER_CACHE" != "0" ]; then
     export INTEL_SHADER_CACHE=1
-    export MESA_GLSL_CACHE_DISABLE=0
+    export MESA_SHADER_CACHE_DISABLE=0
 else
     export INTEL_SHADER_CACHE=0
-    export MESA_GLSL_CACHE_DISABLE=1
+    export MESA_SHADER_CACHE_DISABLE=1
 fi
 
 if [ -z "$PIGLIT_PLATFORM" -a -z "$DISPLAY" ]; then
