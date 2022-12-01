@@ -27,6 +27,11 @@ if [[ "$CROCUS" -ne 0 && ! -d "$MESA_DIR/src/gallium/drivers/crocus" ]]; then
     CROCUS=0
 fi
 
+: ${HASVK=1}
+if [[ "$HASVK" -ne 0 && ! -d "$MESA_DIR/src/intel/vulkan_hasvk" ]]; then
+    HASVK=0
+fi
+
 if [ -z "$DEBUG" ]; then
   D_CFLAGS='-O2 -DNDEBUG --debug'
   export CFLAGS="$CFLAGS $D_CFLAGS"
@@ -61,6 +66,9 @@ if [[ "$MESON" -ne 0 ]]; then
     GALLIUM_DRIVERS=iris,swrast
     if [[ "$CROCUS" -ne 0 ]]; then
         GALLIUM_DRIVERS=${GALLIUM_DRIVERS},crocus
+    fi
+    if [[ "$HASVK" -ne 0 ]]; then
+        VULKAN_DRIVERS=${VULKAN_DRIVERS},intel_hasvk
     fi
 else
     GALLIUM_DRIVERS=
