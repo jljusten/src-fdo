@@ -32,7 +32,7 @@ mkdir -p "$LOG_DIR"
 LOG="$LOG_DIR/crucible$RANGE-$TIMENOW.log"
 
 # Required
-CMD_ENV="$HERE/run-with-dev-mesa stdbuf -o L"
+: ${CMD_ENV="$HERE/run-with-dev-mesa stdbuf -o L"}
 CMD="$BIN run $TESTS"
 
 cd $BIN_DIR

@@ -29,7 +29,7 @@ LOG=$LOG_DIR/1k-$TIMENOW
 TESTS="--test-list $HOME/src/fdo/test-lists/piglit-gen12-simics.txt all"
 
 # Required
-CMD_ENV="$HOME/src/fdo/run-with-dev-mesa"
+: ${CMD_ENV="$HERE/run-with-dev-mesa"}
 CMD="$BIN run $TESTS $LOG"
 
 cd $PIGLIT
