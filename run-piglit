@@ -21,6 +21,11 @@ case "$WHAT" in
         TEST_LIST=""
         PROFILE="$WHAT"
         ;;
+    vk-rt)
+        TEST_LIST="-t "'dEQP-VK.ray_tracing_pipeline.builtin.launchidext.*_1_1_1'
+        TEST_LIST="--test-list=$HOME/src/fdo/piglit/vkcts-rt-tests.txt"
+        PROFILE="deqp_vk"
+        ;;
     *)
         WHAT=""
         ;;
