@@ -26,7 +26,8 @@ if [ ! -z "$START" ]; then
 fi
 
 TIMENOW=`date +%y%m%d-%H%M%S`
-LOG_DIR="$HERE/results"/`hostname`
+: ${RESULTS_SUBDIR=`hostname`}
+LOG_DIR="$HERE/results/$RESULTS_SUBDIR"
 mkdir -p "$LOG_DIR"
 LOG="$LOG_DIR/crucible$RANGE-$TIMENOW.log"
 

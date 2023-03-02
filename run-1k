@@ -22,7 +22,8 @@ export NIR_VALIDATE=0
 unset DISPLAY
 
 TIMENOW=`date +%y%m%d-%H%M%S`
-LOG_DIR="$HERE/results"/`hostname`
+: ${RESULTS_SUBDIR=`hostname`}
+LOG_DIR="$HERE/results/$RESULTS_SUBDIR"
 mkdir -p "$LOG_DIR"
 LOG=$LOG_DIR/1k-$TIMENOW
 TESTS="--test-list $HOME/src/fdo/test-lists/piglit-gen12-simics.txt all"
