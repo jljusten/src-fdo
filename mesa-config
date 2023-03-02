@@ -97,7 +97,7 @@ if [[ "$MESON" -ne 0 ]]; then
     meson \
         -Dgallium-omx=disabled -Dgallium-drivers=$GALLIUM_DRIVERS \
         $DRI_DRIVERS -Dvulkan-drivers=$VULKAN_DRIVERS \
-        -Dtools=intel -Dbuild-tests=true -Dinstall-intel-gpu-tests=true \
+        -Dtools=drm-shim,intel -Dbuild-tests=true -Dinstall-intel-gpu-tests=true \
         -Dglvnd=true -Dlibunwind=disabled \
         -Dopencl-spirv=true -Dgallium-opencl=icd -Dintel-clc=enabled \
         --build.pkg-config-path "$PKG_CONFIG_PATH" \
