@@ -1,8 +1,25 @@
+#!/usr/bin/env bash
 # Jordan Justen : this file is public domain
 
 source $HOME/src/fdo/menv
 export WAFFLE_SOURCE_DIR=$HOME/src/fdo/waffle
 rm $WAFFLE_SOURCE_DIR/CMakeCache.txt
+
+source "$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"/menv
+
+export WAFFLE_SOURCE_DIR=$FDO/waffle
+
+export WAFFLE_BUILD_DIR="$FDO_BUILD_DIR/waffle"
+if [[ -d "$WAFFLE_BUILD_DIR" && ! -z "$WAFFLE_BUILD_DIR" ]]; then
+    echo "Removing old waffle build dir: $WAFFLE_BUILD_DIR"
+    rm -r "$WAFFLE_BUILD_DIR"
+fi
+
+if [[ ! -d "$WAFFLE_BUILD_DIR" && ! -z "$WAFFLE_BUILD_DIR" ]]; then
+    mkdir -p "$WAFFLE_BUILD_DIR"
+fi
+
+cd "$WAFFLE_BUILD_DIR"
 cmake \
   -DCMAKE_BUILD_TYPE=Debug \
   -Dwaffle_has_glx=1 \
@@ -13,5 +30,5 @@ cmake \
   -Dwaffle_build_manpages=1 \
   -DCMAKE_INSTALL_PREFIX=$PREFIX \
   -G Ninja \
-  $WAFFLE_SOURCE_DIR
-#  -DCMAKE_LIBRARY_PATH=$(echo $LIBRARY_PATH | sed 's/:/;/g') \
+  $WAFFLE_SOURCE_DIR \
+  "$@"
