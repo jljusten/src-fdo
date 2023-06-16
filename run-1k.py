@@ -54,7 +54,7 @@ if subset:
     if part_num < num_parts:
         end_num = part_num * num_per_group
     else:
-        end_num = len(src_test_list)
+        end_num = len(src_test_names)
     test_names = src_test_names[start_num:end_num]
 
     tmp_test_list = tempfile.NamedTemporaryFile(mode='w', encoding='utf-8')
