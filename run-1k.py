@@ -2,6 +2,7 @@
 # Jordan Justen : this file is public domain
 
 import os
+import re
 import socket
 import subprocess
 import sys
@@ -35,10 +36,39 @@ log_dir = os.path.join(here, 'results', results_subdir)
 if not os.path.exists(log_dir):
     os.makedirs(log_dir)
 
-log = os.path.join(log_dir, f'1k-{timenow}')
+src_test_list = os.path.join(os.path.expanduser('~'), 'src', 'fdo', 'test-lists',
+                             'piglit-gen12-simics.txt')
 
-test_list = os.path.join(os.path.expanduser('~'), 'src', 'fdo', 'test-lists',
-                         'piglit-gen12-simics.txt')
+subset = os.environ.get('SUBSET', None)
+
+if subset:
+    src_test_names = open(src_test_list).readlines()
+    regex = re.compile(r'^(\d+)/(\d+)$')
+    mo = regex.match(subset)
+    assert mo
+    part_num = int(mo.group(1))
+    num_parts = int(mo.group(2))
+    assert part_num > 0 and part_num <= num_parts
+    num_per_group = len(src_test_names) // num_parts
+    start_num = (part_num - 1) * num_per_group
+    if part_num < num_parts:
+        end_num = part_num * num_per_group
+    else:
+        end_num = len(src_test_list)
+    test_names = src_test_names[start_num:end_num]
+
+    tmp_test_list = tempfile.NamedTemporaryFile(mode='w', encoding='utf-8')
+
+    for line in test_names:
+        tmp_test_list.write(line)
+    tmp_test_list.flush()
+
+    test_list = tmp_test_list.name
+    log = os.path.join(log_dir, f'1k-{start_num:04d}-{end_num:04d}-{timenow}')
+else:
+    test_list = src_test_list
+    log = os.path.join(log_dir, f'1k-{timenow}')
+
 tests = ['--test-list', test_list, 'all']
 
 cmd_env = os.environ.get('CMD_ENV', os.path.join(here, 'run-with-dev-mesa'))
