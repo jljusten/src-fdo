@@ -36,6 +36,7 @@ LOG="$LOG_DIR/crucible$RANGE-$TIMENOW.log"
 CMD="$BIN run $TESTS"
 
 cd $BIN_DIR
+echo Log file: $LOG
 echo $CMD "$@" > $LOG
 time nice $CMD_ENV $CMD "$@" |& tee -a $LOG | \
     grep -E -e '^crucible: (pass|fail|lost)' \
