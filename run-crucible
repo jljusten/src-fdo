@@ -39,5 +39,38 @@ cd $BIN_DIR
 echo Log file: $LOG
 echo $CMD "$@" > $LOG
 time nice $CMD_ENV $CMD "$@" |& tee -a $LOG | \
-    grep -E -e '^crucible: (pass|fail|lost)' \
-            -e '^crucible: info   : (ran|pass|fail|skip|lost)'
+    python3 <(
+cat << EOF
+from collections import Counter
+import re
+import sys
+
+result_re = re.compile('crucible: (start|ran|pass|fail|skip|lost)')
+summary_re = re.compile('crucible: info   : (ran|pass|fail|skip|lost)')
+printed_nums = False
+results = Counter()
+for l in sys.stdin:
+    mo = result_re.match(l)
+    if mo is not None:
+        stat = mo.group(1)
+        results.update((stat,))
+        stats = ', '.join([ f'{k}={v}' for (k,v) in results.items() ])
+        print(f'{("","\r")[printed_nums]}{stats}', end='', flush=True)
+        printed_nums = True
+        continue
+    mo = summary_re.match(l)
+    if mo is not None:
+        if printed_nums:
+            print()
+            printed_nums = False
+        print(l, end='')
+        continue
+    #else:
+    #   print('hmm', l.rstrip())
+
+if printed_nums:
+    print()
+    printed_nums = False
+
+EOF
+)
