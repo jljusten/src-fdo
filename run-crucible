@@ -19,7 +19,7 @@ fi
 
 if [ ! -z "$START" ]; then
     if [ -z "$END" ]; then
-	END=$(($START + 50))
+        END=$(($START + 50))
     fi
     RANGE=-$START-$END
     TESTS="$($BIN ls-tests | grep '^func' | head -$END | tail +$(($START+1)))"
