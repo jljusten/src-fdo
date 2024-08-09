@@ -55,7 +55,9 @@ for l in sys.stdin:
         stat = mo.group(1)
         results.update((stat,))
         stats = ', '.join([ f'{k}={v}' for (k,v) in results.items() ])
-        print(f'{("","\r")[printed_nums]}{stats}', end='', flush=True)
+        if printed_nums:
+            print('\r', end='')
+        print(stats, end='', flush=True)
         printed_nums = True
         continue
     mo = summary_re.match(l)
