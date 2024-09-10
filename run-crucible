@@ -83,6 +83,8 @@ nice = shutil.which('nice')
 cmd = [ nice, ] + CMD_ENV + cmd
 print(' '.join(cmd), file=log)
 
+stdout_isatty = sys.stdout.isatty()
+
 p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                      encoding='utf-8', cwd=LOG_DIR)
 
@@ -93,7 +95,10 @@ results = Counter()
 for l in iter(p.stdout.readline, ''):
     log.write(l)
 
-    mo = result_re.match(l)
+    if stdout_isatty:
+        mo = result_re.match(l)
+    else:
+        mo = None
     if mo is not None:
         stat = mo.group(1)
         results.update((stat,))
