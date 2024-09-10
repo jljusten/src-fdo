@@ -115,8 +115,6 @@ for l in iter(p.stdout.readline, ''):
             printed_nums = False
         print(l, end='')
         continue
-    #else:
-    #   print('hmm', l.rstrip())
 
 if printed_nums:
     print()
