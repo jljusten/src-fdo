@@ -1,71 +1,103 @@
-#!/usr/bin/env bash
+#!/usr/bin/env python3
 # Jordan Justen : this file is public domain
 
-HERE="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
+from collections import Counter
+import io
+import os
+import re
+import shutil
+import subprocess
+import sys
 
-set -e
+def run(args, capture=True):
+    cp = subprocess.run(args, capture_output=capture, text=True)
+    assert(cp.returncode == 0)
+    return cp
 
-if [[ $# < 1 ]]; then
-    unset WHAT
-else
-    WHAT="$1"
-    shift
-fi
+def run_func(args):
+    cp = run(args)
+    lines = cp.stdout.split('\n')
+    if len(lines) == 2 and lines[1] == '':
+        lines = lines[:1]
+    assert len(lines) == 1
+    return lines[0]
 
-case "$WHAT" in
-    1k)
-        TEST_LIST="--test-list=$HOME/src/fdo/test-lists/piglit-gen12-simics.txt"
-        PROFILE=all
-        ;;
-    gpu|sanity|all)
-        TEST_LIST=""
-        PROFILE="$WHAT"
-        ;;
-    vk-rt)
-        TEST_LIST="-t "'dEQP-VK.ray_tracing_pipeline.builtin.launchidext.*_1_1_1'
-        TEST_LIST="--test-list=$HOME/src/fdo/piglit/vkcts-rt-tests.txt"
-        PROFILE="deqp_vk"
-        ;;
-    *)
-        WHAT=""
-        ;;
-esac
+SCRIPT=os.path.realpath(sys.argv[0])
+HERE=os.path.dirname(SCRIPT)
+here_plus = lambda *args: os.path.join(HERE, *args)
 
-if [ -z "$WHAT" ]; then
-    echo "Usage: $0 [1k | all | gpu | sanity] [piglit params...]"
-    exit -1
-fi
+fdo_dir = os.path.expanduser('~/src/fdo')
+fdo_plus = lambda *args: os.path.join(fdo_dir, *args)
+with_dev_mesa = fdo_plus('run-with-dev-mesa')
 
-if [ -x "$HERE/piglit/piglit" ]; then
-    PIGLIT="$HERE/piglit"
-else
-    PIGLIT="$HOME/src/fdo/piglit"
-fi
-BIN="$PIGLIT/piglit"
+if len(sys.argv) < 2:
+    what = None
+    args = []
+else:
+    what = sys.argv[1]
+    args = sys.argv[2:]
 
-if [ ! -x "$BIN" ]; then
-    echo "$BIN is not executable"
-    exit 1
-fi
+if what == '1k':
+        test_list = [ "--test-list=" +
+                      fdo_plus('test-lists/piglit-gen12-simics.txt') ]
+        profile = 'all'
+elif what in { 'gpu', 'sanity', 'all' }:
+        test_list = []
+        profile = what
+elif what == 'vk-rt':
+        test_list = "-t "'dEQP-VK.ray_tracing_pipeline.builtin.launchidext.*_1_1_1'
+        test_list = [ "--test-list=" +
+                      fdo_plus('piglit/vkcts-rt-tests.txt') ]
+        profile = "deqp_vk"
+else:
+    what = None
 
-export vblank_mode=0
-export NIR_VALIDATE=0
-unset DISPLAY
+if what is None:
+    print(f"Usage: {sys.argv[0]} [1k | all | gpu | sanity] [piglit params...]")
+    sys.exit(-1)
 
-TIMENOW=`date +%y%m%d-%H%M%S`
-: ${RESULTS_SUBDIR=`hostname`}
-LOG_DIR="$HERE/results/$RESULTS_SUBDIR"
-mkdir -p "$LOG_DIR"
-LOG=$LOG_DIR/$WHAT-$TIMENOW
+if os.access(here_plus('piglit/piglit'), os.X_OK):
+    piglit = here_plus('piglit')
+else:
+    piglit = os.path.expanduser('~/src/fdo/piglit')
+bin = os.path.join(piglit, 'piglit')
 
-# Required
-: ${CMD_ENV="$HERE/run-with-dev-mesa"}
-CMD="$BIN run $PROFILE"
-if [ -n "$TEST_LIST" ]; then
-    CMD="$CMD $TEST_LIST"
-fi
-CMD="$CMD $LOG"
+if not os.access(bin, os.X_OK):
+    print(bin, 'is not executable')
+    sys.exit(1)
 
-cd $PIGLIT
-echo $CMD "$@"
-time nice $CMD_ENV $CMD "$@"
+os.environ['vblank_mode'] = '0'
+os.environ['NIR_VALIDATE'] = '0'
+os.environ.pop('DISPLAY', None)
+
+TIMENOW = run_func(['date', '+%y%m%d-%H%M%S'])
+
+RESULTS_SUBDIR = os.environ.get('RESULTS_SUBDIR')
+if not RESULTS_SUBDIR:
+    RESULTS_SUBDIR = run_func([ 'hostname' ])
+
+LOG_DIR = here_plus('results', RESULTS_SUBDIR)
+os.makedirs(LOG_DIR, exist_ok=True)
+LOG = os.path.join(LOG_DIR, f'{what}-{TIMENOW}')
+
+if 'CMD_ENV' in os.environ:
+    CMD_ENV = [ os.environ['CMD_ENV'], ]
+else:
+    CMD_ENV = [ with_dev_mesa, ]
+
+cmd = [ bin, 'run', profile ] + test_list + [ LOG ] + args
+
+print(' '.join(cmd))
+nice = shutil.which('nice')
+cmd = [ nice ] + CMD_ENV + cmd
+
+status_re = re.compile(r'\[\d+/\d+\] (\w+: \d+)(, (\w+: \d+))*\s*')
+p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                     encoding='utf-8', cwd=piglit)
+
+for l in iter(p.stdout.readline, ''):
+    mo = status_re.match(l)
+    if mo is not None:
+        sys.stdout.write(l.replace('\n', '\r'))
+    else:
+        sys.stdout.write(l)
