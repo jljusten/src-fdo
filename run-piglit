@@ -91,13 +91,29 @@ print(' '.join(cmd))
 nice = shutil.which('nice')
 cmd = [ nice ] + CMD_ENV + cmd
 
+stdout_isatty = sys.stdout.isatty()
 status_re = re.compile(r'\[\d+/\d+\] (\w+: \d+)(, (\w+: \d+))*\s*')
+last_status = None
 p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                      encoding='utf-8', cwd=piglit)
+
+def send_last_status():
+    global last_status
+    if last_status is not None:
+        sys.stdout.write(last_status)
+        last_status = None
 
 for l in iter(p.stdout.readline, ''):
     mo = status_re.match(l)
     if mo is not None:
-        sys.stdout.write(l.replace('\n', '\r'))
+        if not stdout_isatty:
+            last_status = l
+        else:
+            sys.stdout.write(l.replace('\n', '\r'))
     else:
+        send_last_status()
         sys.stdout.write(l)
+        if not stdout_isatty:
+            sys.stdout.flush()
+
+send_last_status()
