@@ -1,55 +1,98 @@
-#!/usr/bin/env bash
+#!/usr/bin/env python3
 # Jordan Justen : this file is public domain
 
-HERE="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
+from collections import Counter
+import os
+import re
+import shutil
+import subprocess
+import sys
 
-set -e
+SCRIPT=os.path.realpath(sys.argv[0])
+HERE=os.path.dirname(SCRIPT)
+here_plus = lambda *args: os.path.join(HERE, *args)
+with_dev_mesa = here_plus('run-with-dev-mesa')
 
-if [ -x "$HERE/crucible/bin/crucible" ]; then
-    CRUCIBLE="$HERE/crucible"
-else
-    CRUCIBLE="$HOME/src/fdo/crucible"
-fi
-BIN="$CRUCIBLE/bin/crucible"
+def run(args, capture=True):
+    cp = subprocess.run(args, capture_output=capture, text=True)
+    assert(cp.returncode == 0)
+    return cp
 
-if [ ! -x "$BIN" ]; then
-    echo "$BIN is not executable"
-    exit 1
-fi
+def run_func(args):
+    cp = run(args)
+    lines = cp.stdout.split('\n')
+    if len(lines) == 2 and lines[1] == '':
+        lines = lines[:1]
+    assert len(lines) == 1
+    return lines[0]
 
-if [ ! -z "$START" ]; then
-    if [ -z "$END" ]; then
-        END=$(($START + 50))
-    fi
-    RANGE=-$START-$END
-    TESTS="$($BIN ls-tests | grep '^func' | head -$END | tail +$(($START+1)))"
-fi
+if os.path.exists(here_plus('crucible/bin/crucible')):
+    CRUCIBLE = here_plus('crucible')
+else:
+    CRUCIBLE = os.path.expanduser('~/src/fdo/crucible')
 
-TIMENOW=`date +%y%m%d-%H%M%S`
-: ${RESULTS_SUBDIR=`hostname`}
-LOG_DIR="$HERE/results/$RESULTS_SUBDIR"
-mkdir -p "$LOG_DIR"
-LOG="$LOG_DIR/crucible$RANGE-$TIMENOW.log"
+BIN = os.path.join(CRUCIBLE, 'bin/crucible')
+
+if not os.access(BIN, os.X_OK):
+    print(BIN, "is not executable")
+    sys.exit(1)
+
+START = os.environ.get('START')
+END = os.environ.get('END')
+if START is not None and len(START) > 0:
+    regex = re.compile(r'^OpenGL (version|renderer) .*')
+    START = int(START)
+    if END is not None and len(END) > 0:
+        END = int(END)
+    else:
+        END = START + 50
+    RANGE = f'-{START}-{END}'
+    cp = run([BIN, 'ls-tests'])
+    all_tests = [ test for test in cp.stdout.split('\n')
+                  if test.startswith('func.') ]
+    TESTS = [ test for i, test in enumerate(all_tests)
+              if i >= START and i < END ]
+else:
+    RANGE = ''
+    TESTS = []
+
+TIMENOW = run_func(['date', '+%y%m%d-%H%M%S'])
+
+RESULTS_SUBDIR = os.environ.get('RESULTS_SUBDIR')
+if not RESULTS_SUBDIR:
+    RESULTS_SUBDIR = run_func([ 'hostname' ])
+    assert '\n' not in RESULTS_SUBDIR
+
+LOG_DIR = here_plus('results', RESULTS_SUBDIR)
+os.makedirs(LOG_DIR, exist_ok=True)
+LOG = os.path.join(LOG_DIR, f'crucible-{TIMENOW}{RANGE}.log')
 
 # Required
-: ${CMD_ENV="$HERE/run-with-dev-mesa stdbuf -o L"}
-CMD="$BIN run $TESTS"
+if 'CMD_ENV' in os.environ:
+    CMD_ENV = [ os.environ['CMD_ENV'], ]
+else:
+    CMD_ENV = [ with_dev_mesa, 'stdbuf', '-o', 'L', ]
+cmd = [ BIN, 'run' ] + TESTS
 
-cd $BIN_DIR
-echo Log file: $LOG
-echo $CMD "$@" > $LOG
-time nice $CMD_ENV $CMD "$@" |& tee -a $LOG | \
-    python3 <(
-cat << EOF
-from collections import Counter
-import re
-import sys
+print('Log file:', LOG)
+log = open(LOG, 'w', encoding='utf-8')
+
+args = sys.argv[1:]
+cmd += args
+nice = shutil.which('nice')
+cmd = [ nice, ] + CMD_ENV + cmd
+print(' '.join(cmd), file=log)
+
+p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                     encoding='utf-8', cwd=LOG_DIR)
 
 result_re = re.compile('crucible: (start|ran|pass|fail|skip|lost)')
 summary_re = re.compile('crucible: info   : (ran|pass|fail|skip|lost)')
 printed_nums = False
 results = Counter()
-for l in sys.stdin:
+for l in iter(p.stdout.readline, ''):
+    log.write(l)
+
     mo = result_re.match(l)
     if mo is not None:
         stat = mo.group(1)
@@ -74,5 +117,4 @@ if printed_nums:
     print()
     printed_nums = False
 
-EOF
-)
+log.close()
