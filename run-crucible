@@ -89,35 +89,57 @@ p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                      encoding='utf-8', cwd=LOG_DIR)
 
 result_re = re.compile('crucible: (start|ran|pass|fail|skip|lost)')
-summary_re = re.compile('crucible: info   : (ran|pass|fail|skip|lost)')
+summary_re = re.compile(r'crucible: info   : (ran|pass|fail|skip|lost) (\d+)')
 printed_nums = False
 results = Counter()
+summary_nums = dict()
 for l in iter(p.stdout.readline, ''):
     log.write(l)
 
-    if stdout_isatty:
-        mo = result_re.match(l)
-    else:
-        mo = None
+    mo = result_re.match(l)
     if mo is not None:
         stat = mo.group(1)
+        if stat == 'start':
+            stat = 'ran'
         results.update((stat,))
-        stats = ', '.join([ f'{k}={v}' for (k,v) in results.items() ])
-        if printed_nums:
-            print('\r', end='')
-        print(stats, end='', flush=True)
-        printed_nums = True
+        if stdout_isatty:
+            stats = ', '.join([ f'{k}={v}' for (k,v) in results.items() ])
+            if printed_nums:
+                print('\r', end='')
+            print(stats, end='', flush=True)
+            printed_nums = True
         continue
     mo = summary_re.match(l)
     if mo is not None:
-        if printed_nums:
-            print()
-            printed_nums = False
-        print(l, end='')
+        assert mo.group(1) not in summary_nums
+        summary_nums[mo.group(1)] = int(mo.group(2))
         continue
 
 if printed_nums:
     print()
     printed_nums = False
+
+assert all({ results[k] == summary_nums[k] for k in
+             set(results.keys()) | set(summary_nums.keys()) })
+
+priorities = { r: i for (i, r) in
+               enumerate('pass fail lost'.split()) }
+def result_name_key(r):
+    global priorities
+    n = priorities.get(r, len(priorities))
+    return (n, r)
+
+ran = results.pop('ran', 0)
+skip = results.pop('skip', 0)
+
+results = [ (r, results[r]) for r in
+            sorted(results.keys(), key=result_name_key) ]
+results = [ f'{r[0]}: {r[1]} ({r[1]/(ran - skip):.1%})' for r in results ]
+results.insert(0, f'ran: {ran - skip}')
+if skip > 0:
+    results.append(f'({skip} skipped)')
+results = ', '.join(results)
+print(results, file=log)
+print(results)
 
 log.close()
