@@ -93,6 +93,7 @@ cmd = [ nice ] + CMD_ENV + cmd
 
 stdout_isatty = sys.stdout.isatty()
 status_re = re.compile(r'\[\d+/\d+\] (\w+: \d+)(, (\w+: \d+))*\s*')
+terse_filter_re = re.compile(r'(^\s*$)|^(Thank you|Results have)')
 last_status = None
 p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                      encoding='utf-8', cwd=piglit)
@@ -112,8 +113,11 @@ for l in iter(p.stdout.readline, ''):
             sys.stdout.write(l.replace('\n', '\r'))
     else:
         send_last_status()
-        sys.stdout.write(l)
-        if not stdout_isatty:
-            sys.stdout.flush()
+        if stdout_isatty:
+            sys.stdout.write(l)
+        else:
+            mo = terse_filter_re.match(l)
+            if mo is None:
+                print(l, end='', flush=True)
 
 send_last_status()
