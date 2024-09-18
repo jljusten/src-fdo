@@ -8,6 +8,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 
 def run(args, capture=True):
     cp = subprocess.run(args, capture_output=capture, text=True)
@@ -70,7 +71,7 @@ os.environ['vblank_mode'] = '0'
 os.environ['NIR_VALIDATE'] = '0'
 os.environ.pop('DISPLAY', None)
 
-TIMENOW = run_func(['date', '+%y%m%d-%H%M%S'])
+timenow = time.strftime(r'%y%m%d-%H%M%S')
 
 RESULTS_SUBDIR = os.environ.get('RESULTS_SUBDIR')
 if not RESULTS_SUBDIR:
@@ -78,7 +79,7 @@ if not RESULTS_SUBDIR:
 
 LOG_DIR = here_plus('results', RESULTS_SUBDIR)
 os.makedirs(LOG_DIR, exist_ok=True)
-LOG = os.path.join(LOG_DIR, f'{what}-{TIMENOW}')
+LOG = os.path.join(LOG_DIR, f'{what}-{timenow}')
 
 if 'CMD_ENV' in os.environ:
     CMD_ENV = [ os.environ['CMD_ENV'], ]
