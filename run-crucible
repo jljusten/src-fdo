@@ -7,6 +7,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 
 SCRIPT=os.path.realpath(sys.argv[0])
 HERE=os.path.dirname(SCRIPT)
@@ -56,7 +57,7 @@ else:
     RANGE = ''
     TESTS = []
 
-TIMENOW = run_func(['date', '+%y%m%d-%H%M%S'])
+timenow = time.strftime(r'%y%m%d-%H%M%S')
 
 RESULTS_SUBDIR = os.environ.get('RESULTS_SUBDIR')
 if not RESULTS_SUBDIR:
@@ -65,7 +66,7 @@ if not RESULTS_SUBDIR:
 
 LOG_DIR = here_plus('results', RESULTS_SUBDIR)
 os.makedirs(LOG_DIR, exist_ok=True)
-LOG = os.path.join(LOG_DIR, f'crucible-{TIMENOW}{RANGE}.log')
+LOG = os.path.join(LOG_DIR, f'crucible-{timenow}{RANGE}.log')
 
 # Required
 if 'CMD_ENV' in os.environ:
