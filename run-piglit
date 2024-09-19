@@ -31,7 +31,13 @@ fdo_dir = os.path.expanduser('~/src/fdo')
 fdo_plus = lambda *args: os.path.join(fdo_dir, *args)
 with_dev_mesa = fdo_plus('run-with-dev-mesa')
 
-if len(sys.argv) < 2:
+executable_name = os.path.basename(sys.argv[0])
+
+if executable_name != 'run-piglit':
+    assert executable_name.startswith('run-') and len(executable_name) > 4
+    what = executable_name[4:]
+    args = sys.argv[1:]
+elif len(sys.argv) < 2:
     what = None
     args = []
 else:
