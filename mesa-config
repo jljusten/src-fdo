@@ -95,7 +95,7 @@ fi
 
 if [[ "$MESON" -ne 0 ]]; then
     meson \
-        -Dgallium-omx=disabled -Dgallium-drivers=$GALLIUM_DRIVERS \
+        -Dgallium-drivers=$GALLIUM_DRIVERS \
         $DRI_DRIVERS -Dvulkan-drivers=$VULKAN_DRIVERS \
         -Dtools=drm-shim,intel -Dbuild-tests=true -Dinstall-intel-gpu-tests=true \
         -Dglvnd=true -Dlibunwind=disabled \
