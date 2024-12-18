@@ -77,7 +77,8 @@ os.environ['vblank_mode'] = '0'
 os.environ['NIR_VALIDATE'] = '0'
 os.environ.pop('DISPLAY', None)
 
-timenow = time.strftime(r'%y%m%d-%H%M%S')
+start = time.time()
+timenow = time.strftime(r'%y%m%d-%H%M%S', time.localtime(start))
 
 RESULTS_SUBDIR = os.environ.get('RESULTS_SUBDIR')
 if not RESULTS_SUBDIR:
@@ -128,3 +129,12 @@ for l in iter(p.stdout.readline, ''):
                 print(l, end='', flush=True)
 
 send_last_status()
+
+p.poll()
+elapsed = time.time() - start
+if elapsed < 1.0:
+    elapsed *= 1000.0
+    unit = 'ms'
+else:
+    unit = 's'
+print(f'piglit returned {p.returncode} in {elapsed:.1f}{unit}')
