@@ -93,8 +93,11 @@ p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
 result_re = re.compile('crucible: (start|ran|pass|fail|skip|lost)')
 summary_re = re.compile(r'crucible: info   : (ran|pass|fail|skip|lost) (\d+)')
 printed_nums = False
-results = Counter()
+results = Counter(running=0, ran=0)
+skip = 0
 summary_nums = dict()
+delayed_running_update = 0
+max_running = 0
 for l in iter(p.stdout.readline, ''):
     log.write(l)
 
@@ -102,8 +105,23 @@ for l in iter(p.stdout.readline, ''):
     if mo is not None:
         stat = mo.group(1)
         if stat == 'start':
-            stat = 'ran'
-        results.update((stat,))
+            if delayed_running_update > 0:
+                delayed_running_update -= 1
+            else:
+                results.update(('running',))
+                max_running = max(max_running, results['running'])
+        else:
+            if stat != 'skip':
+                results.update((stat, 'ran'))
+            else:
+                skip += 1
+            delay_wiggle = max_running // 10
+            if (delayed_running_update >= delay_wiggle or
+                results['running'] <= (max_running - delay_wiggle)):
+                results.subtract(Counter(running=1 + delayed_running_update))
+                delayed_running_update = 0
+            else:
+                delayed_running_update += 1
         if stdout_isatty:
             stats = ', '.join([ f'{k}={v}' for (k,v) in results.items() ])
             if printed_nums:
@@ -121,6 +139,14 @@ if printed_nums:
     print()
     printed_nums = False
 
+assert results.pop('running', 0) == 0
+assert summary_nums.pop('skip', 0) == skip
+
+# Skips are included in the summary number run count, but we filter
+# them out
+assert results['ran'] <= summary_nums['ran']
+summary_nums['ran'] = results['ran']
+
 assert all({ results[k] == summary_nums[k] for k in
              set(results.keys()) | set(summary_nums.keys()) })
 
@@ -132,12 +158,11 @@ def result_name_key(r):
     return (n, r)
 
 ran = results.pop('ran', 0)
-skip = results.pop('skip', 0)
 
 results = [ (r, results[r]) for r in
             sorted(results.keys(), key=result_name_key) ]
-results = [ f'{r[0]}: {r[1]} ({r[1]/(ran - skip):.1%})' for r in results ]
-results.insert(0, f'ran: {ran - skip}')
+results = [ f'{r[0]}: {r[1]} ({r[1]/ran:.1%})' for r in results ]
+results.insert(0, f'ran: {ran}')
 if skip > 0:
     results.append(f'({skip} skipped)')
 results = ', '.join(results)
