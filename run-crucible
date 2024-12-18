@@ -57,7 +57,8 @@ else:
     RANGE = ''
     TESTS = []
 
-timenow = time.strftime(r'%y%m%d-%H%M%S')
+start = time.time()
+timenow = time.strftime(r'%y%m%d-%H%M%S', time.localtime(start))
 
 RESULTS_SUBDIR = os.environ.get('RESULTS_SUBDIR')
 if not RESULTS_SUBDIR:
@@ -144,3 +145,12 @@ print(results, file=log)
 print(results)
 
 log.close()
+
+p.poll()
+elapsed = time.time() - start
+if elapsed < 1.0:
+    elapsed *= 1000.0
+    unit = 'ms'
+else:
+    unit = 's'
+print(f'crucible returned {p.returncode} in {elapsed:.1f}{unit}')
