@@ -3,15 +3,16 @@
 
 from collections import Counter
 import os
+import pathlib
 import re
 import shutil
 import subprocess
 import sys
 import time
 
-SCRIPT=os.path.realpath(sys.argv[0])
-HERE=os.path.dirname(SCRIPT)
-here_plus = lambda *args: os.path.join(HERE, *args)
+script = pathlib.Path(sys.argv[0]).resolve()
+here = script.parent
+here_plus = lambda *args: here.joinpath(*args)
 with_dev_mesa = here_plus('run-with-dev-mesa')
 
 def run(args, capture=True):
@@ -27,15 +28,15 @@ def run_func(args):
     assert len(lines) == 1
     return lines[0]
 
-if os.path.exists(here_plus('crucible/bin/crucible')):
-    CRUCIBLE = here_plus('crucible')
+if here_plus('crucible/bin/crucible').exists():
+    crucible = here_plus('crucible')
 else:
-    CRUCIBLE = os.path.expanduser('~/src/fdo/crucible')
+    crucible = pathlib.Path('~/src/fdo/crucible').expanduser()
 
-BIN = os.path.join(CRUCIBLE, 'bin/crucible')
+exe = crucible.joinpath('bin/crucible')
 
-if not os.access(BIN, os.X_OK):
-    print(BIN, "is not executable")
+if not os.access(exe, os.X_OK):
+    print(exe, "is not executable")
     sys.exit(1)
 
 START = os.environ.get('START')
@@ -48,7 +49,7 @@ if START is not None and len(START) > 0:
     else:
         END = START + 50
     RANGE = f'-{START}-{END}'
-    cp = run([BIN, 'ls-tests'])
+    cp = run([exe, 'ls-tests'])
     all_tests = [ test for test in cp.stdout.split('\n')
                   if test.startswith('func.') ]
     TESTS = [ test for i, test in enumerate(all_tests)
@@ -60,35 +61,35 @@ else:
 start = time.time()
 timenow = time.strftime(r'%y%m%d-%H%M%S', time.localtime(start))
 
-RESULTS_SUBDIR = os.environ.get('RESULTS_SUBDIR')
-if not RESULTS_SUBDIR:
-    RESULTS_SUBDIR = run_func([ 'hostname' ])
-    assert '\n' not in RESULTS_SUBDIR
+results_subdir = os.environ.get('RESULTS_SUBDIR')
+if not results_subdir:
+    results_subdir = run_func([ 'hostname' ])
+    assert '\n' not in results_subdir
 
-LOG_DIR = here_plus('results', RESULTS_SUBDIR)
-os.makedirs(LOG_DIR, exist_ok=True)
-LOG = os.path.join(LOG_DIR, f'crucible-{timenow}{RANGE}.log')
+log_dir = here_plus('results', results_subdir)
+log_dir.mkdir(parents=True, exist_ok=True)
+log_fn = log_dir.joinpath(f'crucible-{timenow}{RANGE}.log')
 
 # Required
 if 'CMD_ENV' in os.environ:
-    CMD_ENV = [ os.environ['CMD_ENV'], ]
+    cmd_env = [ os.environ['CMD_ENV'], ]
 else:
-    CMD_ENV = [ with_dev_mesa, 'stdbuf', '-o', 'L', ]
-cmd = [ BIN, 'run' ] + TESTS
+    cmd_env = [ str(with_dev_mesa), 'stdbuf', '-o', 'L', ]
+cmd = [ str(exe), 'run' ] + TESTS
 
-print('Log file:', LOG)
-log = open(LOG, 'w', encoding='utf-8')
+print('Log file:', log_fn)
+log = open(log_fn, 'w', encoding='utf-8')
 
 args = sys.argv[1:]
 cmd += args
 nice = shutil.which('nice')
-cmd = [ nice, ] + CMD_ENV + cmd
+cmd = [ nice, ] + cmd_env + cmd
 print(' '.join(cmd), file=log)
 
 stdout_isatty = sys.stdout.isatty()
 
 p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                     encoding='utf-8', cwd=LOG_DIR)
+                     encoding='utf-8', cwd=log_dir)
 
 result_re = re.compile('crucible: (start|ran|pass|fail|skip|lost)')
 summary_re = re.compile(r'crucible: info   : (ran|pass|fail|skip|lost) (\d+)')
