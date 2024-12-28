@@ -28,155 +28,167 @@ def run_func(args):
     assert len(lines) == 1
     return lines[0]
 
-if here_plus('crucible/bin/crucible').exists():
-    crucible = here_plus('crucible')
-else:
-    crucible = pathlib.Path('~/src/fdo/crucible').expanduser()
-
-exe = crucible.joinpath('bin/crucible')
-
-if not os.access(exe, os.X_OK):
-    print(exe, "is not executable")
-    sys.exit(1)
-
-START = os.environ.get('START')
-END = os.environ.get('END')
-if START is not None and len(START) > 0:
-    regex = re.compile(r'^OpenGL (version|renderer) .*')
-    START = int(START)
-    if END is not None and len(END) > 0:
-        END = int(END)
-    else:
-        END = START + 50
-    RANGE = f'-{START}-{END}'
-    cp = run([exe, 'ls-tests'])
-    all_tests = [ test for test in cp.stdout.split('\n')
-                  if test.startswith('func.') ]
-    TESTS = [ test for i, test in enumerate(all_tests)
-              if i >= START and i < END ]
-else:
-    RANGE = ''
-    TESTS = []
-
-start = time.time()
-timenow = time.strftime(r'%y%m%d-%H%M%S', time.localtime(start))
-
-results_subdir = os.environ.get('RESULTS_SUBDIR')
-if not results_subdir:
-    results_subdir = run_func([ 'hostname' ])
-    assert '\n' not in results_subdir
-
-log_dir = here_plus('results', results_subdir)
-log_dir.mkdir(parents=True, exist_ok=True)
-log_fn = log_dir.joinpath(f'crucible-{timenow}{RANGE}.log')
-
-# Required
-if 'CMD_ENV' in os.environ:
-    cmd_env = [ os.environ['CMD_ENV'], ]
-else:
-    cmd_env = [ str(with_dev_mesa), 'stdbuf', '-o', 'L', ]
-cmd = [ str(exe), 'run' ] + TESTS
-
-print('Log file:', log_fn)
-log = open(log_fn, 'w', encoding='utf-8')
-
-args = sys.argv[1:]
-cmd += args
-nice = shutil.which('nice')
-cmd = [ nice, ] + cmd_env + cmd
-print(' '.join(cmd), file=log)
-
-stdout_isatty = sys.stdout.isatty()
-
-p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                     encoding='utf-8', cwd=log_dir)
-
-result_re = re.compile('crucible: (start|ran|pass|fail|skip|lost)')
-summary_re = re.compile(r'crucible: info   : (ran|pass|fail|skip|lost) (\d+)')
-printed_nums = False
-results = Counter(running=0, ran=0)
-skip = 0
-summary_nums = dict()
-delayed_running_update = 0
-max_running = 0
-for l in iter(p.stdout.readline, ''):
-    log.write(l)
-
-    mo = result_re.match(l)
-    if mo is not None:
-        stat = mo.group(1)
-        if stat == 'start':
-            if delayed_running_update > 0:
-                delayed_running_update -= 1
-            else:
-                results.update(('running',))
-                max_running = max(max_running, results['running'])
+class RunCrucible:
+    def __init__(self):
+        if here_plus('crucible/bin/crucible').exists():
+            crucible = here_plus('crucible')
         else:
-            if stat != 'skip':
-                results.update((stat, 'ran'))
+            crucible = pathlib.Path('~/src/fdo/crucible').expanduser()
+
+        exe = crucible.joinpath('bin/crucible')
+
+        if not os.access(exe, os.X_OK):
+            print(exe, "is not executable")
+            sys.exit(1)
+
+        START = os.environ.get('START')
+        END = os.environ.get('END')
+        if START is not None and len(START) > 0:
+            regex = re.compile(r'^OpenGL (version|renderer) .*')
+            START = int(START)
+            if END is not None and len(END) > 0:
+                END = int(END)
             else:
-                skip += 1
-            delay_wiggle = max_running // 10
-            if (delayed_running_update >= delay_wiggle or
-                results['running'] <= (max_running - delay_wiggle)):
-                results.subtract(Counter(running=1 + delayed_running_update))
-                delayed_running_update = 0
-            else:
-                delayed_running_update += 1
-        if stdout_isatty:
-            stats = ', '.join([ f'{k}={v}' for (k,v) in results.items() ])
-            if printed_nums:
-                print('\r', end='')
-            print(stats, end='', flush=True)
-            printed_nums = True
-        continue
-    mo = summary_re.match(l)
-    if mo is not None:
-        assert mo.group(1) not in summary_nums
-        summary_nums[mo.group(1)] = int(mo.group(2))
-        continue
+                END = START + 50
+            RANGE = f'-{START}-{END}'
+            cp = run([exe, 'ls-tests'])
+            all_tests = [ test for test in cp.stdout.split('\n')
+                          if test.startswith('func.') ]
+            TESTS = [ test for i, test in enumerate(all_tests)
+                      if i >= START and i < END ]
+        else:
+            RANGE = ''
+            TESTS = []
 
-if printed_nums:
-    print()
-    printed_nums = False
+        start = time.time()
+        timenow = time.strftime(r'%y%m%d-%H%M%S', time.localtime(start))
 
-assert results.pop('running', 0) == 0
-assert summary_nums.pop('skip', 0) == skip
+        results_subdir = os.environ.get('RESULTS_SUBDIR')
+        if not results_subdir:
+            results_subdir = run_func([ 'hostname' ])
+            assert '\n' not in results_subdir
 
-# Skips are included in the summary number run count, but we filter
-# them out
-assert results['ran'] <= summary_nums['ran']
-summary_nums['ran'] = results['ran']
+        log_dir = here_plus('results', results_subdir)
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_fn = log_dir.joinpath(f'crucible-{timenow}{RANGE}.log')
 
-assert all({ results[k] == summary_nums[k] for k in
-             set(results.keys()) | set(summary_nums.keys()) })
+        # Required
+        if 'CMD_ENV' in os.environ:
+            cmd_env = [ os.environ['CMD_ENV'], ]
+        else:
+            cmd_env = [ str(with_dev_mesa), 'stdbuf', '-o', 'L', ]
+        cmd = [ str(exe), 'run' ] + TESTS
 
-priorities = { r: i for (i, r) in
-               enumerate('pass fail lost'.split()) }
-def result_name_key(r):
-    global priorities
-    n = priorities.get(r, len(priorities))
-    return (n, r)
+        print('Log file:', log_fn)
+        log = open(log_fn, 'w', encoding='utf-8')
 
-ran = results.pop('ran', 0)
+        args = sys.argv[1:]
+        cmd += args
+        nice = shutil.which('nice')
+        cmd = [ nice, ] + cmd_env + cmd
+        print(' '.join(cmd), file=log)
 
-results = [ (r, results[r]) for r in
-            sorted(results.keys(), key=result_name_key) ]
-results = [ f'{r[0]}: {r[1]} ({r[1]/ran:.1%})' for r in results ]
-results.insert(0, f'ran: {ran}')
-if skip > 0:
-    results.append(f'({skip} skipped)')
-results = ', '.join(results)
-print(results, file=log)
-print(results)
+        stdout_isatty = sys.stdout.isatty()
 
-log.close()
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT, encoding='utf-8',
+                             cwd=log_dir)
 
-p.poll()
-elapsed = time.time() - start
-if elapsed < 1.0:
-    elapsed *= 1000.0
-    unit = 'ms'
-else:
-    unit = 's'
-print(f'crucible returned {p.returncode} in {elapsed:.1f}{unit}')
+        result_re = re.compile('crucible: (start|ran|pass|fail|skip|lost)')
+        summary_re = \
+            re.compile(r'crucible: info   : (ran|pass|fail|skip|lost) (\d+)')
+        printed_nums = False
+        results = Counter(running=0, ran=0)
+        skip = 0
+        summary_nums = dict()
+        delayed_running_update = 0
+        max_running = 0
+        for l in iter(p.stdout.readline, ''):
+            log.write(l)
+
+            mo = result_re.match(l)
+            if mo is not None:
+                stat = mo.group(1)
+                if stat == 'start':
+                    if delayed_running_update > 0:
+                        delayed_running_update -= 1
+                    else:
+                        results.update(('running',))
+                        max_running = max(max_running, results['running'])
+                else:
+                    if stat != 'skip':
+                        results.update((stat, 'ran'))
+                    else:
+                        skip += 1
+                    delay_wiggle = max_running // 10
+                    if (delayed_running_update >= delay_wiggle or
+                        results['running'] <= (max_running - delay_wiggle)):
+                        results.subtract(Counter(running=1 +
+                                                 delayed_running_update))
+                        delayed_running_update = 0
+                    else:
+                        delayed_running_update += 1
+                if stdout_isatty:
+                    stats = ', '.join([ f'{k}={v}'
+                                        for (k,v) in results.items() ])
+                    if printed_nums:
+                        print('\r', end='')
+                    print(stats, end='', flush=True)
+                    printed_nums = True
+                continue
+            mo = summary_re.match(l)
+            if mo is not None:
+                assert mo.group(1) not in summary_nums
+                summary_nums[mo.group(1)] = int(mo.group(2))
+                continue
+
+        if printed_nums:
+            print()
+            printed_nums = False
+
+        assert results.pop('running', 0) == 0
+        assert summary_nums.pop('skip', 0) == skip
+
+        # Skips are included in the summary number run count, but we filter
+        # them out
+        assert results['ran'] <= summary_nums['ran']
+        summary_nums['ran'] = results['ran']
+
+        assert all({ results[k] == summary_nums[k] for k in
+                     set(results.keys()) | set(summary_nums.keys()) })
+
+        priorities = { r: i for (i, r) in
+                       enumerate('pass fail lost'.split()) }
+        def result_name_key(r):
+            n = priorities.get(r, len(priorities))
+            return (n, r)
+
+        ran = results.pop('ran', 0)
+
+        results = [ (r, results[r]) for r in
+                    sorted(results.keys(), key=result_name_key) ]
+        results = [ f'{r[0]}: {r[1]} ({r[1]/ran:.1%})' for r in results ]
+        results.insert(0, f'ran: {ran}')
+        if skip > 0:
+            results.append(f'({skip} skipped)')
+        results = ', '.join(results)
+        print(results, file=log)
+        print(results)
+
+        log.close()
+
+        p.poll()
+        elapsed = time.time() - start
+        if elapsed < 1.0:
+            elapsed *= 1000.0
+            unit = 'ms'
+        else:
+            unit = 's'
+        print(f'crucible returned {p.returncode} in {elapsed:.1f}{unit}')
+
+class App:
+    def __init__(self):
+        RunCrucible()
+
+if __name__ == "__main__":
+    App()
