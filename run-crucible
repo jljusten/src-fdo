@@ -28,71 +28,9 @@ def run_func(args):
     assert len(lines) == 1
     return lines[0]
 
-class RunCrucible:
-    def __init__(self):
-        if here_plus('crucible/bin/crucible').exists():
-            crucible = here_plus('crucible')
-        else:
-            crucible = pathlib.Path('~/src/fdo/crucible').expanduser()
-
-        exe = crucible.joinpath('bin/crucible')
-
-        if not os.access(exe, os.X_OK):
-            print(exe, "is not executable")
-            sys.exit(1)
-
-        START = os.environ.get('START')
-        END = os.environ.get('END')
-        if START is not None and len(START) > 0:
-            regex = re.compile(r'^OpenGL (version|renderer) .*')
-            START = int(START)
-            if END is not None and len(END) > 0:
-                END = int(END)
-            else:
-                END = START + 50
-            RANGE = f'-{START}-{END}'
-            cp = run([exe, 'ls-tests'])
-            all_tests = [ test for test in cp.stdout.split('\n')
-                          if test.startswith('func.') ]
-            TESTS = [ test for i, test in enumerate(all_tests)
-                      if i >= START and i < END ]
-        else:
-            RANGE = ''
-            TESTS = []
-
-        start = time.time()
-        timenow = time.strftime(r'%y%m%d-%H%M%S', time.localtime(start))
-
-        results_subdir = os.environ.get('RESULTS_SUBDIR')
-        if not results_subdir:
-            results_subdir = run_func([ 'hostname' ])
-            assert '\n' not in results_subdir
-
-        log_dir = here_plus('results', results_subdir)
-        log_dir.mkdir(parents=True, exist_ok=True)
-        log_fn = log_dir.joinpath(f'crucible-{timenow}{RANGE}.log')
-
-        # Required
-        if 'CMD_ENV' in os.environ:
-            cmd_env = [ os.environ['CMD_ENV'], ]
-        else:
-            cmd_env = [ str(with_dev_mesa), 'stdbuf', '-o', 'L', ]
-        cmd = [ str(exe), 'run' ] + TESTS
-
-        print('Log file:', log_fn)
-        log = open(log_fn, 'w', encoding='utf-8')
-
-        args = sys.argv[1:]
-        cmd += args
-        nice = shutil.which('nice')
-        cmd = [ nice, ] + cmd_env + cmd
-        print(' '.join(cmd), file=log)
-
+class ResultsStreamer:
+    def __init__(self, results_file, log_file=None):
         stdout_isatty = sys.stdout.isatty()
-
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT, encoding='utf-8',
-                             cwd=log_dir)
 
         result_re = re.compile('crucible: (start|ran|pass|fail|skip|lost)')
         summary_re = \
@@ -103,8 +41,9 @@ class RunCrucible:
         summary_nums = dict()
         delayed_running_update = 0
         max_running = 0
-        for l in iter(p.stdout.readline, ''):
-            log.write(l)
+        for l in iter(results_file.readline, ''):
+            if log_file is not None:
+                log_file.write(l)
 
             mo = result_re.match(l)
             if mo is not None:
@@ -172,9 +111,75 @@ class RunCrucible:
         if skip > 0:
             results.append(f'({skip} skipped)')
         results = ', '.join(results)
-        print(results, file=log)
+        if log_file is not None:
+            print(results, file=log_file)
         print(results)
 
+class RunCrucible:
+    def __init__(self):
+        if here_plus('crucible/bin/crucible').exists():
+            crucible = here_plus('crucible')
+        else:
+            crucible = pathlib.Path('~/src/fdo/crucible').expanduser()
+
+        exe = crucible.joinpath('bin/crucible')
+
+        if not os.access(exe, os.X_OK):
+            print(exe, "is not executable")
+            sys.exit(1)
+
+        START = os.environ.get('START')
+        END = os.environ.get('END')
+        if START is not None and len(START) > 0:
+            regex = re.compile(r'^OpenGL (version|renderer) .*')
+            START = int(START)
+            if END is not None and len(END) > 0:
+                END = int(END)
+            else:
+                END = START + 50
+            RANGE = f'-{START}-{END}'
+            cp = run([exe, 'ls-tests'])
+            all_tests = [ test for test in cp.stdout.split('\n')
+                          if test.startswith('func.') ]
+            TESTS = [ test for i, test in enumerate(all_tests)
+                      if i >= START and i < END ]
+        else:
+            RANGE = ''
+            TESTS = []
+
+        start = time.time()
+        timenow = time.strftime(r'%y%m%d-%H%M%S', time.localtime(start))
+
+        results_subdir = os.environ.get('RESULTS_SUBDIR')
+        if not results_subdir:
+            results_subdir = run_func([ 'hostname' ])
+            assert '\n' not in results_subdir
+
+        log_dir = here_plus('results', results_subdir)
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_fn = log_dir.joinpath(f'crucible-{timenow}{RANGE}.log')
+
+        # Required
+        if 'CMD_ENV' in os.environ:
+            cmd_env = [ os.environ['CMD_ENV'], ]
+        else:
+            cmd_env = [ str(with_dev_mesa), 'stdbuf', '-o', 'L', ]
+        cmd = [ str(exe), 'run' ] + TESTS
+
+        print('Log file:', log_fn)
+        log = open(log_fn, 'w', encoding='utf-8')
+
+        args = sys.argv[1:]
+        cmd += args
+        nice = shutil.which('nice')
+        cmd = [ nice, ] + cmd_env + cmd
+        print(' '.join(cmd), file=log)
+
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT, encoding='utf-8',
+                             cwd=log_dir)
+
+        streamer = ResultsStreamer(p.stdout, log)
         log.close()
 
         p.poll()
