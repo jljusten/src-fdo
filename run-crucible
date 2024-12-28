@@ -45,7 +45,7 @@ class ResultsStreamer:
             if log_file is not None:
                 log_file.write(l)
 
-            mo = result_re.match(l)
+            mo = result_re.search(l)
             if mo is not None:
                 stat = mo.group(1)
                 if stat == 'start':
