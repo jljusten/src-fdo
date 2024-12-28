@@ -193,9 +193,19 @@ class RunCrucible:
             unit = 's'
         print(f'crucible returned {p.returncode} in {elapsed:.1f}{unit}')
 
+class ParseResultsFile:
+    def __init__(self):
+        results_fn = pathlib.Path(sys.argv[1])
+        assert results_fn.is_file()
+        results = results_fn.open()
+        streamer = ResultsStreamer(results)
+
 class App:
     def __init__(self):
-        RunCrucible()
+        if len(sys.argv) > 1 and sys.argv[1].endswith('.log'):
+            ParseResultsFile()
+        else:
+            RunCrucible()
 
 if __name__ == "__main__":
     App()
