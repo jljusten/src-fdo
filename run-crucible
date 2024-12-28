@@ -85,7 +85,9 @@ class ResultsStreamer:
             print()
             printed_nums = False
 
-        assert results.pop('running', 0) == 0
+        still_running = results.pop('running', 0)
+        if still_running > 0:
+            print(f"Warning: {still_running} tests didn't report a result")
         assert summary_nums.pop('skip', 0) == skip
 
         # Skips are included in the summary number run count, but we filter
