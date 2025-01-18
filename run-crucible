@@ -92,10 +92,11 @@ class ResultsStreamer:
 
         # Skips are included in the summary number run count, but we filter
         # them out
-        assert results['ran'] <= summary_nums['ran']
-        summary_nums['ran'] = results['ran']
+        if 'ran' in summary_nums or results['ran'] > 0:
+            assert results['ran'] <= summary_nums.get('ran', 0)
+            summary_nums['ran'] = results['ran']
 
-        assert all({ results[k] == summary_nums[k] for k in
+        assert all({ results[k] == summary_nums.get(k, 0) for k in
                      set(results.keys()) | set(summary_nums.keys()) })
 
         priorities = { r: i for (i, r) in
