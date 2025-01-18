@@ -35,12 +35,12 @@ class ResultsStreamer:
         result_re = re.compile('crucible: (start|ran|pass|fail|skip|lost)')
         summary_re = \
             re.compile(r'crucible: info   : (ran|pass|fail|skip|lost) (\d+)')
-        printed_nums = False
         results = Counter(running=0, ran=0)
         skip = 0
         summary_nums = dict()
         delayed_running_update = 0
         max_running = 0
+        stats_len = 0
         for l in iter(results_file.readline, ''):
             if log_file is not None:
                 log_file.write(l)
@@ -70,10 +70,11 @@ class ResultsStreamer:
                 if stdout_isatty:
                     stats = ', '.join([ f'{k}={v}'
                                         for (k,v) in results.items() ])
-                    if printed_nums:
-                        print('\r', end='')
-                    print(stats, end='', flush=True)
-                    printed_nums = True
+                    to_print = '\r' + stats
+                    if stats_len > len(stats):
+                        to_print += ' ' * (stats_len - len(stats))
+                    stats_len = len(stats)
+                    print(to_print, end='', flush=True)
                 continue
             mo = summary_re.match(l)
             if mo is not None:
@@ -81,9 +82,8 @@ class ResultsStreamer:
                 summary_nums[mo.group(1)] = int(mo.group(2))
                 continue
 
-        if printed_nums:
+        if stats_len > 0:
             print()
-            printed_nums = False
 
         still_running = results.pop('running', 0)
         if still_running > 0:
