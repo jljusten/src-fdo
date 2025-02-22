@@ -1,0 +1,173 @@
+#!/usr/bin/env python3
+# Jordan Justen : this file is public domain
+
+from collections import Counter
+import csv
+import io
+import os
+import pathlib
+import re
+import shutil
+import subprocess
+import sys
+import time
+
+def run(args, capture=True):
+    cp = subprocess.run(args, capture_output=capture, text=True)
+    assert(cp.returncode == 0)
+    return cp
+
+def run_func(args):
+    cp = run(args)
+    lines = cp.stdout.split('\n')
+    if len(lines) == 2 and lines[1] == '':
+        lines = lines[:1]
+    assert len(lines) == 1
+    return lines[0]
+
+def clean_log_dir(log_dir):
+    rm_ok = True
+    for root, dirs, files in log_dir.walk():
+        if len(dirs) > 0:
+            rm_ok = False
+            break
+
+    if rm_ok:
+        for root, dirs, files in log_dir.walk():
+            assert len(dirs) == 0
+            for name in files:
+                (root / name).unlink()
+        log_dir.rmdir()
+
+def summarize_csv(csv_path, log):
+    if not csv_path.exists():
+        return
+    results = Counter({'pass': 0, 'fail': 0})
+    with csv_path.open(newline='') as csv_file:
+        csv_reader = csv.reader(csv_file)
+        for row in csv_reader:
+            results.update((row[1].lower(),))
+    if results.total() == 0:
+        return
+    skipped = results.pop('skip', 0)
+    ran = results.total()
+    results = { k: v for k, v in results.items() if v > 0 }
+    results = [ f'{k}: {v} ({v/ran:.1%})' for k, v in results.items() ]
+    results.insert(0, f'ran: {ran}')
+    if skipped > 0:
+        results.append(f'({skipped} skipped)')
+    results = ', '.join(results)
+    print(results, file=log)
+    print(results)
+
+script = pathlib.Path(sys.argv[0]).resolve()
+here = script.parent
+here_plus = lambda *args: here.joinpath(*args)
+with_dev_mesa = here_plus('run-with-dev-mesa')
+
+cts_dir = pathlib.Path('~/src/khr/vk').expanduser()
+cts_plus = lambda *args: cts_dir.joinpath(*args)
+
+executable_name = os.path.basename(sys.argv[0])
+
+if executable_name != 'run-vkcts':
+    assert executable_name.startswith('run-vkcts-') and len(executable_name) > 10
+    what = executable_name[10:]
+    args = sys.argv[1:]
+elif len(sys.argv) < 2:
+    what = None
+    args = []
+else:
+    what = sys.argv[1]
+    args = sys.argv[2:]
+
+if what == '10k':
+    seed = 1
+    count = 10000
+else:
+    count = None
+
+if count is None:
+    print(f"Usage: {sys.argv[0]} [10k] [deqp-vk params...]")
+    sys.exit(-1)
+
+caselist = here_plus(f'test-lists/deqp-vk-c{count}-s{seed}.lst')
+if not caselist.exists():
+    print('caselist', caselist, 'not found')
+    sys.exit(1)
+
+deqp_runner = shutil.which('deqp-runner')
+if deqp_runner is None:
+    print('deqp_runner was not found')
+    sys.exit(1)
+
+deqp_vk = cts_plus('build/external/vulkancts/modules/vulkan/deqp-vk')
+if not os.access(deqp_vk, os.X_OK):
+    print(deqp_vk, 'is not executable')
+    sys.exit(1)
+
+os.environ['vblank_mode'] = '0'
+os.environ['NIR_VALIDATE'] = '0'
+os.environ.pop('DISPLAY', None)
+
+start = time.time()
+timenow = time.strftime(r'%y%m%d-%H%M%S', time.localtime(start))
+
+results_subdir = os.environ.get('results_subdir')
+if not results_subdir:
+    results_subdir = run_func([ 'hostname' ])
+results_dir = here_plus('results', results_subdir)
+
+log_base = f'vkcts-{what}-{timenow}'
+log_dir = results_dir.joinpath(log_base)
+log_fn = results_dir.joinpath(log_base + '.log')
+
+if 'CMD_ENV' in os.environ:
+    CMD_ENV = [ os.environ['CMD_ENV'], ]
+else:
+    CMD_ENV = [ with_dev_mesa, ]
+
+cmd = [
+    deqp_runner, 'run',
+    f'--deqp={deqp_vk}',
+    f'--caselist={caselist}',
+    f'--output={log_dir}',
+]
+if len(args) > 0:
+    cmd += [ '--', args ]
+
+print(' '.join(cmd))
+nice = shutil.which('nice')
+cmd = [ nice ] + CMD_ENV + cmd
+
+stdout_isatty = sys.stdout.isatty()
+log = log_fn.open('w')
+os.makedirs(log_dir, exist_ok=True)
+p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                     encoding='utf-8', cwd=deqp_vk.parent)
+
+for l in iter(p.stdout.readline, ''):
+    log.write(l)
+
+p.poll()
+elapsed = time.time() - start
+
+if elapsed < 1.0:
+    elapsed *= 1000.0
+    unit = 'ms'
+else:
+    unit = 's'
+summary =f'deqp-runner returned {p.returncode} in {elapsed:.1f}{unit}'
+print(summary, file=log)
+print(summary)
+
+results_csv = log_dir.joinpath('results.csv')
+if results_csv.exists():
+    print(f'\n{results_csv.name}:', file=log)
+    log.write(results_csv.open().read())
+    print(file=log)
+    summarize_csv(results_csv, log)
+
+print(f'log: {log_fn}')
+log.close()
+clean_log_dir(log_dir)
