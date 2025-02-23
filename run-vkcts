@@ -4,6 +4,7 @@
 from collections import Counter
 import csv
 import io
+import math
 import os
 import pathlib
 import re
@@ -81,17 +82,38 @@ else:
     what = sys.argv[1]
     args = sys.argv[2:]
 
-if what == '10k':
-    seed = 1
-    count = 10000
+count_regex = re.compile(
+    r'''
+       ^
+       (?P<fullnum>
+           (?P<num>\d+(\.\d+)?)         # count for tests
+           (?P<suffix>[km])?            # optional suffix (k, m)
+       )
+       (?:,(?P<seed>\d+))?              # optional seed number
+       $
+    ''', re.VERBOSE | re.IGNORECASE)
+count_mo = what and count_regex.match(what)
+
+if count_mo is not None:
+    seed = 1 if count_mo.group('seed') is None else int(count_mo.group('seed'))
+    suffix = (count_mo.group('suffix') or '').lower()
+    mult = { '': 1, 'k': 10**3, 'm': 10**6 }[suffix]
+    num = float(count_mo.group('num'))
+    count = float(count_mo.group('num')) * mult
+    assert (0.5 - abs(math.modf(count)[0] - 0.5)) < 0.001
+    count = round(count)
+    testspec = f"c{count_mo.group('fullnum')}-s{seed}"
 else:
     count = None
 
 if count is None:
-    print(f"Usage: {sys.argv[0]} [10k] [deqp-vk params...]")
+    print(f"Usage: {sys.argv[0]} [num,seed] [deqp-vk params...]")
+    print('\nExamples:')
+    print(f"$ {sys.argv[0]} 10k   # run 10000 tests with default random seed")
+    print(f"$ {sys.argv[0]} 10,3  # run 10 tests using a seed of 3")
     sys.exit(-1)
 
-caselist = here_plus(f'test-lists/deqp-vk-c{count}-s{seed}.lst')
+caselist = here_plus(f'test-lists/deqp-vk-{testspec}.lst')
 if not caselist.exists():
     print('caselist', caselist, 'not found')
     sys.exit(1)
