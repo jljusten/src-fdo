@@ -7,6 +7,7 @@ import io
 import math
 import os
 import pathlib
+import random
 import re
 import shutil
 import subprocess
@@ -68,6 +69,7 @@ with_dev_mesa = here_plus('run-with-dev-mesa')
 
 cts_dir = pathlib.Path('~/src/khr/vk').expanduser()
 cts_plus = lambda *args: cts_dir.joinpath(*args)
+mustpass = cts_plus('src/external/vulkancts/mustpass/main/vk-default.txt')
 
 executable_name = os.path.basename(sys.argv[0])
 
@@ -113,7 +115,23 @@ if count is None:
     print(f"$ {sys.argv[0]} 10,3  # run 10 tests using a seed of 3")
     sys.exit(-1)
 
+def generate_caselist(count, seed, src_list, dst_list):
+    with src_list.open() as src_file:
+        cases = set()
+        for sublist in iter(src_file.readline, ''):
+            fn = src_list.parent / sublist.strip()
+            with fn.open() as sublist_file:
+                cases |= { l.strip() for l in iter(sublist_file.readline, '') }
+    random.seed(seed)
+    cases = random.sample(sorted(cases), count)
+    assert len(cases) == count
+    with dst_list.open('w') as dst_file:
+        for c in cases:
+            print(c, file=dst_file)
+
 caselist = here_plus(f'test-lists/deqp-vk-{testspec}.lst')
+if not caselist.exists():
+    generate_caselist(count, seed, mustpass, caselist)
 if not caselist.exists():
     print('caselist', caselist, 'not found')
     sys.exit(1)
