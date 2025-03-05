@@ -48,7 +48,7 @@ if what == '1k':
         test_list = [ "--test-list=" +
                       fdo_plus('test-lists/piglit-gen12-simics.txt') ]
         profile = 'all'
-elif what in { 'gpu', 'sanity', 'all' }:
+elif what in { 'all', 'gpu', 'quick', 'sanity' }:
         test_list = []
         profile = what
 elif what == 'vk-rt':
@@ -60,7 +60,7 @@ else:
     what = None
 
 if what is None:
-    print(f"Usage: {sys.argv[0]} [1k | all | gpu | sanity] [piglit params...]")
+    print(f"Usage: {sys.argv[0]} [1k | all | gpu | quick | sanity] [piglit params...]")
     sys.exit(-1)
 
 if os.access(here_plus('piglit/piglit'), os.X_OK):
