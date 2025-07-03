@@ -99,7 +99,7 @@ if [[ "$MESON" -ne 0 ]]; then
         $DRI_DRIVERS -Dvulkan-drivers=$VULKAN_DRIVERS \
         -Dtools=drm-shim,intel -Dbuild-tests=true -Dinstall-intel-gpu-tests=true \
         -Dglvnd=enabled -Dlibunwind=disabled \
-        -Dgallium-opencl=icd -Dintel-clc=enabled \
+        -Dintel-clc=enabled \
         --build.pkg-config-path "$PKG_CONFIG_PATH" \
         --prefix="$PREFIX" --libdir="lib/$LIB_ARCH-linux-gnu" \
         --buildtype=$MESON_BUILDTYPE \
