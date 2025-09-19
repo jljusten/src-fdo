@@ -85,7 +85,13 @@ else:
     args = sys.argv[2:]
 
 count = None
+seed = None
 caselist = None
+
+if what and what == "all":
+    count = "all"
+    results_name = what
+    testspec = what
 
 count_regex = re.compile(
     r'''
@@ -97,8 +103,8 @@ count_regex = re.compile(
        (?:,(?P<seed>\d+))?              # optional seed number
        $
     ''', re.VERBOSE | re.IGNORECASE)
-count_mo = what and count_regex.match(what)
-if count_mo is not None:
+count_mo = (not count) and what and count_regex.match(what)
+if count_mo:
     seed = 1 if count_mo.group('seed') is None else int(count_mo.group('seed'))
     suffix = (count_mo.group('suffix') or '').lower()
     mult = { '': 1, 'k': 10**3, 'm': 10**6 }[suffix]
@@ -132,9 +138,12 @@ def generate_caselist(count, seed, src_list, dst_list):
             fn = src_list.parent / sublist.strip()
             with fn.open() as sublist_file:
                 cases |= { l.strip() for l in iter(sublist_file.readline, '') }
-    random.seed(seed)
-    cases = random.sample(sorted(cases), count)
-    assert len(cases) == count
+    if count == "all":
+        cases = sorted(cases)
+    else:
+        random.seed(seed)
+        cases = random.sample(sorted(cases), count)
+        assert len(cases) == count
     with dst_list.open('w') as dst_file:
         for c in cases:
             print(c, file=dst_file)
@@ -143,7 +152,7 @@ if caselist is None:
     caselist = here_plus(f'test-lists/deqp-vk-{testspec}.lst')
     if not caselist.exists():
         generate_caselist(count, seed, mustpass, caselist)
-if not caselist.exists():
+if caselist and not caselist.exists():
     print('caselist', caselist, 'not found')
     sys.exit(1)
 
@@ -181,9 +190,11 @@ else:
 cmd = [
     deqp_runner, 'run',
     f'--deqp={deqp_vk}',
-    f'--caselist={caselist}',
     f'--output={log_dir}',
 ]
+if caselist is not None:
+    cmd.append(f'--caselist={caselist}')
+
 if len(args) > 0:
     cmd += [ '--', args ]
 
