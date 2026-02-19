@@ -63,7 +63,11 @@ if what is None:
     print(f"Usage: {sys.argv[0]} [1k | all | gpu | quick | sanity] [piglit params...]")
     sys.exit(-1)
 
-if os.access(here_plus('piglit/piglit'), os.X_OK):
+path_piglit = shutil.which('piglit')
+
+if path_piglit is not None:
+    piglit = os.path.dirname(path_piglit)
+elif os.access(here_plus('piglit/piglit'), os.X_OK):
     piglit = here_plus('piglit')
 else:
     piglit = os.path.expanduser('~/src/fdo/piglit')
