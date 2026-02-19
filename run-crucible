@@ -165,8 +165,8 @@ class RunCrucible:
         # Required
         if 'CMD_ENV' in os.environ:
             cmd_env = [ os.environ['CMD_ENV'], ]
-        elif os.path.isdir(here_plus('pfx')):
-            cmd_env = [ with_dev_mesa, ]
+        elif os.path.isdir(here_plus('build')):
+            cmd_env = [ str(with_dev_mesa), ]
         else:
             cmd_env = []
         cmd = [ str(exe), 'run' ] + TESTS
