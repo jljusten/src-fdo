@@ -48,7 +48,7 @@ if what == '1k':
         test_list = [ "--test-list=" +
                       fdo_plus('test-lists/piglit-gen12-simics.txt') ]
         profile = 'all'
-elif what in { 'all', 'gpu', 'quick', 'sanity' }:
+elif what in { 'all', 'gpu', 'quick', 'quick_cl', 'sanity' }:
         test_list = []
         profile = what
 elif what == 'vk-rt':
