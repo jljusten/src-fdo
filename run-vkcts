@@ -161,7 +161,9 @@ if deqp_runner is None:
     print('deqp_runner was not found')
     sys.exit(1)
 
-deqp_vk = cts_plus('build/external/vulkancts/modules/vulkan/deqp-vk')
+deqp_vk = pathlib.Path(shutil.which('deqp-vk'))
+if deqp_vk is None:
+    deqp_vk = cts_plus('build/external/vulkancts/modules/vulkan/deqp-vk')
 if not os.access(deqp_vk, os.X_OK):
     print(deqp_vk, 'is not executable')
     sys.exit(1)
