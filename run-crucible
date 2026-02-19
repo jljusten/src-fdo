@@ -164,7 +164,10 @@ class RunCrucible:
 
         # Required
         if 'CMD_ENV' in os.environ:
-            cmd_env = [ os.environ['CMD_ENV'], ]
+            if os.environ['CMD_ENV'] == '':
+                cmd_env = []
+            else:
+                cmd_env = [ os.environ['CMD_ENV'], ]
         elif os.path.isdir(here_plus('build')):
             cmd_env = [ str(with_dev_mesa), ]
         else:

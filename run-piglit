@@ -93,7 +93,10 @@ os.makedirs(LOG_DIR, exist_ok=True)
 LOG = os.path.join(LOG_DIR, f'{what}-{timenow}')
 
 if 'CMD_ENV' in os.environ:
-    CMD_ENV = [ os.environ['CMD_ENV'], ]
+    if os.environ['CMD_ENV'] == '':
+        CMD_ENV = []
+    else:
+        CMD_ENV = [ os.environ['CMD_ENV'], ]
 elif os.path.isdir(here_plus('build')):
     CMD_ENV = [ with_dev_mesa, ]
 else:
