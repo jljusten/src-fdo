@@ -90,8 +90,12 @@ LOG = os.path.join(LOG_DIR, f'{what}-{timenow}')
 
 if 'CMD_ENV' in os.environ:
     CMD_ENV = [ os.environ['CMD_ENV'], ]
-else:
+elif os.path.isdir(here_plus('pfx')):
     CMD_ENV = [ with_dev_mesa, ]
+else:
+    CMD_ENV = []
+
+os.environ['PIGLIT_PLATFORM'] = 'gbm'
 
 cmd = [ bin, 'run', profile ] + test_list + [ LOG ] + args
 
