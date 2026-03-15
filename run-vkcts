@@ -177,7 +177,7 @@ os.environ.pop('DISPLAY', None)
 start = time.time()
 timenow = time.strftime(r'%y%m%d-%H%M%S', time.localtime(start))
 
-results_subdir = os.environ.get('results_subdir')
+results_subdir = os.environ.get('RESULTS_SUBDIR')
 if not results_subdir:
     results_subdir = run_func([ 'hostname' ])
 results_dir = here_plus('results', results_subdir)
