@@ -155,7 +155,13 @@ def generate_caselist(count, seed, src_list, dst_list):
             print(c, file=dst_file)
 
 if caselist is None:
-    caselist = here_plus(f'test-lists/deqp-vk-{testspec}.lst')
+    caselist_rel = pathlib.Path('test-lists') / f'deqp-vk-{testspec}.lst'
+    xdg_caselist = xdg_data_plus('fdo', caselist_rel)
+    here_caselist = here_plus(caselist_rel)
+    if xdg_caselist.exists() or not here_caselist.exists():
+        caselist = xdg_caselist
+    else:
+        caselist = here_caselist
     if not caselist.exists():
         generate_caselist(count, seed, mustpass, caselist)
 if caselist and not caselist.exists():
