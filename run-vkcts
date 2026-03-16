@@ -62,6 +62,12 @@ def summarize_csv(csv_path, log):
     print(results, file=log)
     print(results)
 
+xdg_data = os.environ.get('XDG_DATA_HOME')
+if not xdg_data:
+    xdg_data = os.path.join(os.environ['HOME'], '.local', 'share')
+xdg_data = pathlib.Path(xdg_data)
+xdg_data_plus = lambda *args: xdg_data.joinpath(*args)
+
 script = pathlib.Path(sys.argv[0]).resolve()
 here = script.parent
 here_plus = lambda *args: here.joinpath(*args)
@@ -180,7 +186,7 @@ timenow = time.strftime(r'%y%m%d-%H%M%S', time.localtime(start))
 results_subdir = os.environ.get('RESULTS_SUBDIR')
 if not results_subdir:
     results_subdir = run_func([ 'hostname' ])
-results_dir = here_plus('results', results_subdir)
+results_dir = xdg_data_plus('fdo', 'results', results_subdir)
 
 log_base = f'vkcts-{results_name}-{timenow}'
 log_dir = results_dir.joinpath(log_base)
