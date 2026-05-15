@@ -20,7 +20,15 @@ export MENV_INCLUDED=1
 
 export FDO="$(cd ".." && pwd)"
 
-if [[ "$FDO_SCRIPT" =~ ^.*/src/(tf|fdo)(32)?/[^/]*$ ]]; then
+if [ -v MESA_WORKTREE ]; then
+    export FDO="$(cd "$HOME/src/fdo/mesa-x" && pwd)"
+    export FDO_PRJ="$MESA_WORKTREE"
+    MESA="$FDO_PRJ"
+elif [[ "$FDO" =~ ^.*/src/fdo/mesa-x$ ]]; then
+    export FDO_PRJ="$(basename "$(pwd)")"
+    MESA="$FDO_PRJ"
+    MESA_WORKTREE="$FDO_PRJ"
+elif [[ "$FDO_SCRIPT" =~ ^.*/src/(tf|fdo)(32)?/[^/]*$ ]]; then
     export FDO="$(dirname "$FDO_SCRIPT")"
     export FDO_PRJ=mesa
 elif [[ "$FDO" =~ ^.*/src/(tf|fdo)(32)?$ ]]; then
@@ -44,7 +52,11 @@ if [[ -z "$MESA" ]]; then
 fi
 export MESA_DIR=$FDO/$MESA
 
-FDO_BUILD_DIR=$FDO/build
+if [ -v MESA_WORKTREE ]; then
+    FDO_BUILD_DIR=$FDO/$MESA_WORKTREE/build
+else
+    FDO_BUILD_DIR=$FDO/build
+fi
 
 if [[ -z "$FDO_BUILD_TAG" ]]; then
     if [ "$MESA" == iris ]; then
@@ -73,7 +85,11 @@ else
     export MESON=1
 fi
 
-export MESA_BUILD_DIR="$FDO_BUILD_DIR/$MESA"
+if [ -v MESA_WORKTREE ]; then
+    export MESA_BUILD_DIR="$FDO_BUILD_DIR/mesa"
+else
+    export MESA_BUILD_DIR="$FDO_BUILD_DIR/$MESA"
+fi
 
 TRIPLE=$LIB_ARCH-linux-gnu
 

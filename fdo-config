@@ -10,6 +10,8 @@ PROJECT=`basename $PWD`
 
 if [[ "$PROJECT" =~ ^mesa.*$ ]]; then
 PROJECT=mesa
+elif [ -v MESA_WORKTREE ]; then
+PROJECT=mesa
 fi
 
 if [[ -x $FDO/$PROJECT-config ]]; then
