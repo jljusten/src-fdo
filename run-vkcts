@@ -150,6 +150,7 @@ def generate_caselist(count, seed, src_list, dst_list):
         random.seed(seed)
         cases = random.sample(sorted(cases), count)
         assert len(cases) == count
+    dst_list.parent.mkdir(parents=True, exist_ok=True)
     with dst_list.open('w') as dst_file:
         for c in cases:
             print(c, file=dst_file)
