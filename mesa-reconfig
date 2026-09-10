@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Jordan Justen : this file is public domain
+
+source "$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"/menv
+
+set -e
+
+meson configure "$MESA_BUILD_DIR" "$@"
