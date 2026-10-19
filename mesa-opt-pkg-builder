@@ -1,0 +1,270 @@
+#!/usr/bin/env python3
+# Jordan Justen : this file is public domain
+
+import urllib.parse
+import tempfile
+import textwrap
+import sys
+import subprocess
+import re
+import pathlib
+import os
+import json
+import itertools
+import git
+import argparse
+
+
+# This script helps build a Mesa build which can install under
+# /opt/mesa to not interfere with the system packages.
+description = 'Build Mesa package that will install under /opt/mesa'
+
+xdg_data = os.environ.get('XDG_DATA_HOME')
+if not xdg_data:
+    xdg_data = os.path.join(os.environ['HOME'], '.local', 'share')
+xdg_data = pathlib.Path(xdg_data)
+xdg_data_plus = lambda *args: xdg_data.joinpath(*args)
+
+xdg_cache = os.environ.get('XDG_CACHE_HOME')
+if not xdg_cache:
+    xdg_cache = os.path.join(os.environ['HOME'], '.cache')
+xdg_cache = pathlib.Path(xdg_cache)
+xdg_cache_plus = lambda *args: xdg_cache.joinpath(*args)
+
+builder_cache = xdg_cache_plus('mesa-opt-builder')
+builder_cache_plus = lambda *args: builder_cache.joinpath(*args)
+
+script = pathlib.Path(sys.argv[0]).resolve()
+here = script.parent
+here_plus = lambda *args: here.joinpath(*args)
+with_dev_mesa = here_plus('run-with-dev-mesa')
+
+mesa_src = pathlib.Path('~/src/fdo/mesa').expanduser()
+pkg_output = here_plus('build', 'builder')
+
+
+class Builder:
+    def __init__(self, args, arch):
+        self.args = args
+        self._git = None
+        self._repo = None
+        self._commits = None
+
+        self.dist = 'debian-unstable'
+
+        self.arch_map = {
+            '32': 'i386',
+            '64': 'amd64',
+        }
+        self.arch = arch
+        self.arch_map.update({v: v for v in tuple(self.arch_map.values())})
+
+        self.branch = self.repo.active_branch
+
+    init_tmp_script = textwrap.dedent(r'''
+    #!/usr/bin/env bash
+    set -e
+    apt update -y
+    apt install -y software-properties-common
+    add-apt-repository -y --enable-source --enable-source
+    apt update -y
+    apt-get -y build-dep mesa
+    apt-get -y install zstd
+    ''')
+
+    def init(self):
+        return self.init_arch(self.arch)
+
+    def init_arch(self, arch):
+        builder_cache.mkdir(parents=True, exist_ok=True)
+        root_tar = self.arch_tar()
+        if root_tar.exists():
+            print(f'tarball {root_tar.name} exists')
+            if not self.args.force:
+                return True
+        else:
+            print(f"tarball {root_tar.name} doesn't exist")
+        variant = 'buildd'
+        # variant = 'minbase'
+
+        def cmd(str):
+            return r'--customize-hook=chroot "$1" ' + str
+        with tempfile.NamedTemporaryFile() as tmp:
+            tmp.write(self.init_tmp_script.encode())
+            os.chmod(tmp.name, 0o755)
+            tmp.flush()
+            os.fsync(tmp.fileno())
+            cmd = ('mmdebstrap', '--mode=unshare',
+                   f'--variant={variant}',
+                   '--skip=output/mknod',
+                   f'--architecture={self.arch_map[arch]}',
+                   f"--setup-hook=upload {tmp.name} /mesa-build-setup-init.sh",
+                   cmd('/bin/bash /mesa-build-setup-init.sh'),
+                   r'--customize-hook=rm "$1"/mesa-build-setup-init.sh',
+                   'sid', root_tar)
+            env = {
+                'GZIP': '-9',
+                'XZ_OPT': '-9',
+                'ZSTD_CLEVEL': '9',
+            }
+            if self.args.verbose:
+                print(cmd)
+            cp = subprocess.run(cmd, env=env)
+            return cp.returncode == 0
+
+    def arch_tar(self):
+        return builder_cache / f'{self.get_builder_basename()}.tar.zst'
+
+    def get_build_name(self):
+        n = f'{self.get_builder_basename()}'
+        if self.args.name:
+            n += '-' + self.args.name
+        return n
+
+    def get_build_output(self):
+        return self.get_build_name() + ".tar.zst"
+
+    def get_pfx(self):
+        return f'/opt/mesa/{self.get_build_name()}'
+
+    def get_builder_basename(self):
+        n = f'{self.dist}-{self.arch_map[self.arch]}'
+        return n
+
+    def get_build_script(self):
+        return textwrap.dedent(
+            f'''
+            #!/usr/bin/env bash
+            set -e
+            cd /root
+            meson src build --prefix={self.get_pfx()} \
+                --buildtype=release \
+                -Dgallium-drivers=iris \
+                -Dvulkan-drivers=intel
+            ninja -C build install
+            # apt-get -y install zstd
+            export ZSTD_CLEVEL=9
+            tar -acPf pkg/{self.get_build_output()} {self.get_pfx()}
+            ''')
+
+    def build(self):
+        self.build_arch(self.arch)
+
+    def build_arch(self, arch):
+        assert mesa_src.is_dir(), "Mesa src dir doesn't exist!"
+        root_tar = self.arch_tar()
+        if not root_tar.exists():
+            print(f"tarball {root_tar.name} doesn't exist!")
+            return False
+        with tempfile.TemporaryDirectory() as tmpdir:
+            print(f"Temporary directory to run bwrap: {tmpdir}")
+            print(f"Build output: {self.get_build_output()}")
+            cmd = ('tar',
+                   '-xf', root_tar,
+                   '-C', tmpdir)
+            if self.args.verbose:
+                print(cmd)
+            cp = subprocess.run(cmd)
+            build_script = pathlib.Path('root/build-script.sh')
+            host_build_script = tmpdir / build_script
+            host_build_script.write_text(self.get_build_script())
+            guest_build_script = pathlib.Path('/') / build_script
+            pkg_output.mkdir(parents=True, exist_ok=True)
+            cmd = ('nice', 'bwrap',
+                   '--unshare-user',
+                   '--uid', '0',
+                   '--gid', '0',
+                   '--unshare-uts', '--hostname', 'mesa-opt-pkg-builder',
+                   '--bind', tmpdir, '/',
+                   '--ro-bind', mesa_src, '/root/src',
+                   '--ro-bind', host_build_script, guest_build_script,
+                   '--bind', pkg_output, '/root/pkg',
+                   '--dev', '/dev',
+                   '/bin/bash', guest_build_script)
+            if self.args.verbose:
+                print(cmd)
+            cp = subprocess.run(cmd)
+            return cp.returncode == 0
+
+    def short_rev(self, commit):
+        return self.repo.git.rev_parse(commit, short=True)
+
+    @property
+    def commits(self):
+        if self._commits is None:
+            self._commits = self.get_commits(branch=self.branch)
+        return self._commits
+
+    @property
+    def git(self):
+        if self._git is None:
+            import git
+            self._git = git
+        return self._git
+
+    @property
+    def repo(self):
+        if self._repo is None:
+            self._repo = self.git.Repo()
+        return self._repo
+
+    @property
+    def main_branch(self):
+        remote = self.repo.remotes[self.remote]
+        return remote.refs[self.remote_branch]
+
+
+class App:
+    def __init__(self):
+        self.parse_cmdline()
+        self.architectures = self.args.arch.split(',')
+
+        for arch in self.architectures:
+            builder = Builder(self.args, arch)
+            if self.args.action[0] == 'init':
+                builder.init()
+            elif self.args.action[0] == 'build':
+                builder.build()
+
+    def parse_cmdline(self):
+        p = argparse.ArgumentParser(
+            description=description,
+            epilog=textwrap.dedent(
+                """\
+                Usage examples:
+
+                TODO
+                $ {0} --url=https://gitlab.com/username/reponame
+                """).format(sys.argv[0]),
+            formatter_class=argparse.RawDescriptionHelpFormatter)
+
+        p.add_argument('--name',
+                       help="Name to associate with build")
+
+        p.add_argument('--arch',
+                       help="One or more architectures separated by commas",
+                       default="32,64")
+
+        p.add_argument('-v', '--verbose', action='store_true', default=False,
+                       help="Enable verbose output")
+
+        p.add_argument('-f', '--force', action='store_true', default=False,
+                       help="Force operation to proceed")
+
+        choices = ('init', 'build')
+        p.add_argument("action", choices=choices, nargs=1,
+                       help="Action to perform")
+
+        a = p.parse_args()
+
+        def error(s):
+            p.print_usage()
+            print('{}: error: {}'.format(p.prog, s))
+            sys.exit(1)
+
+        self.cmdline_parser = p
+        self.args = a
+
+
+if __name__ == "__main__":
+    App()
