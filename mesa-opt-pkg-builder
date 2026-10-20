@@ -102,6 +102,8 @@ class Builder:
                    cmd('/bin/bash /mesa-build-setup-init.sh'),
                    r'--customize-hook=rm "$1"/mesa-build-setup-init.sh',
                    'sid', root_tar)
+            if self.args.mirror:
+                cmd += (self.args.mirror,)
             env = {
                 'GZIP': '-9',
                 'XZ_OPT': '-9',
@@ -244,6 +246,8 @@ class App:
         p.add_argument('--arch',
                        help="One or more architectures separated by commas",
                        default="32,64")
+
+        p.add_argument('--mirror', help="Distribution mirror url")
 
         p.add_argument('-v', '--verbose', action='store_true', default=False,
                        help="Enable verbose output")
