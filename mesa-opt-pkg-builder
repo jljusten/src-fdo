@@ -50,7 +50,21 @@ class Builder:
         self._repo = None
         self._commits = None
 
-        self.dist = 'debian-unstable'
+        self.dist = self.args.dist or 'debian-unstable'
+
+        dist_aliases = {
+            'sid': 'debian-unstable',
+        }
+        self.dist_aliases.update({v: v for v in
+                                  tuple(self.dist_aliases.values())})
+        assert self.dist in dist_aliases
+        self.dist = dist_aliases[self.dist]
+
+        debian_dists = {
+            'debian-unstable': 'unstable',
+        }
+        assert self.dist in debian_dists
+        self.debian_dist = debian_dists[self.dist]
 
         self.arch_map = {
             '32': 'i386',
@@ -101,7 +115,7 @@ class Builder:
                    f"--setup-hook=upload {tmp.name} /mesa-build-setup-init.sh",
                    cmd('/bin/bash /mesa-build-setup-init.sh'),
                    r'--customize-hook=rm "$1"/mesa-build-setup-init.sh',
-                   'sid', root_tar)
+                   self.debian_dist, root_tar)
             if self.args.mirror:
                 cmd += (self.args.mirror,)
             env = {
@@ -242,6 +256,9 @@ class App:
 
         p.add_argument('--name',
                        help="Name to associate with build")
+
+        p.add_argument('--dist',
+                       help="Name of distribution")
 
         p.add_argument('--arch',
                        help="One or more architectures separated by commas",
