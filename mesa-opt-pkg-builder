@@ -50,21 +50,30 @@ class Builder:
         self._repo = None
         self._commits = None
 
-        self.dist = self.args.dist or 'debian-unstable'
+        self.dist = self.args.dist or 'unstable'
+
+        ubuntu_codenames = {
+            '26.10': 'Stonking Stingray', # Interim October 2026
+            '26.04': 'Resolute Raccoon',  # LTS April 2026
+            '25.10': 'Questing Quokka',   # Interim October 2025
+            '25.04': 'Plucky Puffin',     # Interim April 2025
+            '24.04': 'Noble Numbat',      # LTS April 2024
+            '22.04': 'Jammy Jellyfish',   # LTS April 2022
+        }
+        ubuntu_codenames = {k: tuple((s.lower() for s in v.split()))
+                            for k, v in ubuntu_codenames.items()}
+        ubuntu_aliases = {'ubuntu'+k: v[0] for k, v in ubuntu_codenames.items()}
 
         dist_aliases = {
             'sid': 'debian-unstable',
         }
-        self.dist_aliases.update({v: v for v in
-                                  tuple(self.dist_aliases.values())})
+        dist_aliases.update(ubuntu_aliases)
+        dist_aliases.update({v: v for v in
+                             tuple(dist_aliases.values())})
         assert self.dist in dist_aliases
         self.dist = dist_aliases[self.dist]
 
-        debian_dists = {
-            'debian-unstable': 'unstable',
-        }
-        assert self.dist in debian_dists
-        self.debian_dist = debian_dists[self.dist]
+        self.debian_dist = self.dist
 
         self.arch_map = {
             '32': 'i386',
