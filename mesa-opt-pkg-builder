@@ -87,10 +87,22 @@ class Builder:
     init_tmp_script = textwrap.dedent(r'''
     #!/usr/bin/env bash
     set -e
+    echo 'Acquire::https::Verify-Peer "false";' | \
+        tee /etc/apt/apt.conf.d/99ignore-ssl
+    cp -avi /etc/apt/sources.list /etc/apt/sources.list.d/more.list
+    grep '^deb ' /etc/apt/sources.list | sed 's/$/-updates/g' >> \
+        /etc/apt/sources.list.d/more.list
+    grep '^deb ' /etc/apt/sources.list | sed 's/$/-backports/g' >> \
+        /etc/apt/sources.list.d/more.list
+    grep '^deb ' /etc/apt/sources.list | sed 's/main$/universe/g' >> \
+        /etc/apt/sources.list.d/more.list
+    mv -v /etc/apt/sources.list.d/more.list /etc/apt/sources.list
+    grep '^deb ' /etc/apt/sources.list | sed 's/^deb /deb-src /g' > \
+        /etc/apt/sources.list.d/deb-src.list
+    cat /etc/apt/sources.list
+    cat /etc/apt/sources.list.d/deb-src.list
     apt update -y
-    apt install -y software-properties-common
-    add-apt-repository -y --enable-source --enable-source
-    apt update -y
+    apt dist-upgrade -y
     apt-get -y build-dep mesa
     apt-get -y install zstd
     ''')
