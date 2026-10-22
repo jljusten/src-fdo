@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # Jordan Justen : this file is public domain
 
-import urllib.parse
 import tempfile
 import textwrap
 import sys
