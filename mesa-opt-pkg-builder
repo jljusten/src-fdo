@@ -88,26 +88,17 @@ class Builder:
         self.arch_map.update({v: v for v in tuple(self.arch_map.values())})
 
     init_tmp_script = textwrap.dedent(r'''
-    #!/usr/bin/env bash
-    set -e
-    echo 'Acquire::https::Verify-Peer "false";' | \
-        tee /etc/apt/apt.conf.d/99ignore-ssl
-    cp -avi /etc/apt/sources.list /etc/apt/sources.list.d/more.list
-    grep '^deb ' /etc/apt/sources.list | sed 's/$/-updates/g' >> \
-        /etc/apt/sources.list.d/more.list
-    grep '^deb ' /etc/apt/sources.list | sed 's/$/-backports/g' >> \
-        /etc/apt/sources.list.d/more.list
-    grep '^deb ' /etc/apt/sources.list | sed 's/main$/universe/g' >> \
-        /etc/apt/sources.list.d/more.list
-    mv -v /etc/apt/sources.list.d/more.list /etc/apt/sources.list
-    grep '^deb ' /etc/apt/sources.list | sed 's/^deb /deb-src /g' > \
-        /etc/apt/sources.list.d/deb-src.list
-    cat /etc/apt/sources.list
-    cat /etc/apt/sources.list.d/deb-src.list
-    apt update -y
-    apt dist-upgrade -y
-    apt-get -y build-dep mesa
-    apt-get -y install zstd
+    #!/usr/bin/env python3
+    import importlib.util
+    import pathlib
+    import sys
+    path = pathlib.Path("/mesa-opt-pkg-builder.py")
+    spec = importlib.util.spec_from_file_location("this_script", path)
+    assert spec
+    this_script = importlib.util.module_from_spec(spec)
+    assert this_script
+    spec.loader.exec_module(this_script)
+    sys.exit(this_script.chroot_initial_setup())
     ''')
 
     def init(self):
@@ -141,10 +132,12 @@ class Builder:
                    f'--variant={variant}',
                    '--skip=output/mknod',
                    f'--architecture={self.arch_map[arch]}',
-                   f"--setup-hook=upload {tmp.name} /mesa-build-setup-init.sh",
-                   cmd('/bin/bash /mesa-build-setup-init.sh'),
-                   r'--customize-hook=rm "$1"/mesa-build-setup-init.sh',
+                   f"--setup-hook=upload {script.name} /{script.name}.py",
+                   cmd('apt install python3 -y'),
+                   f"--setup-hook=upload {str(tmp)} /{tmp.name}",
                    f"--setup-hook=upload {str(init_json)} /{init_json.name}",
+                   cmd('/usr/bin/python3 /mesa-build-setup-init.py'),
+                   r'--customize-hook=rm "$1"/mesa-build-setup-init.py',
                    self.debian_dist, root_tar)
             if self.args.mirror:
                 cmd += (self.args.mirror,)
