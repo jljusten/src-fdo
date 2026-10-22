@@ -170,12 +170,23 @@ class Builder:
             fn = pathlib.Path('/etc/apt/apt.conf.d/99ignore-ssl')
             fn.write_text('Acquire::https::Verify-Peer "false";\n', encoding="utf-8")
 
-        fn = pathlib.Path('/etc/apt/sources.list')
-        lns = fn.read_text(encoding="utf-8").splitlines()
-        lns = (ln for ln in lns if l.startswith('deb '))
-        lns = ('deb-src' + ln[3:] for ln in lns)
+        deb_srcs = pathlib.Path('/etc/apt/sources.list')
+        lns = deb_srcs.read_text(encoding="utf-8").splitlines()
+        deb_lns = tuple(ln for ln in lns if ln.startswith('deb '))
+        if self.ubuntu:
+            more = []
+            for s in ('updates', 'backports',):
+                more += [f'{l}-{s}' for l in deb_lns]
+            for l in deb_lns:
+                r = l.replace('main', 'universe')
+                if r != l:
+                    more.append(r)
+            deb_lns += tuple(more)
+            deb_srcs.write_text('\n'.join(deb_lns), encoding="utf-8")
+
+        srcs_lns = ('deb-src' + ln[3:] for ln in deb_lns)
         fn = pathlib.Path('/etc/apt/sources.list.d/deb-src.list')
-        fn.write_text('\n'.join(lns), encoding="utf-8")
+        fn.write_text('\n'.join(srcs_lns), encoding="utf-8")
 
         cmds = (
             'apt update -y',
