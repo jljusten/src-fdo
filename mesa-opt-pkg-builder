@@ -127,11 +127,13 @@ class Builder:
 
         def cmd(str):
             return r'--customize-hook=chroot "$1" ' + str
-        with tempfile.NamedTemporaryFile() as tmp:
-            tmp.write(self.init_tmp_script.encode())
-            os.chmod(tmp.name, 0o755)
-            tmp.flush()
-            os.fsync(tmp.fileno())
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmpdir = pathlib.Path(tmpdir)
+            tmp = tmpdir / 'mesa-build-setup-init.py'
+            tmp.write_text(self.init_tmp_script)
+            os.chmod(tmp, 0o755)
+            init_json = tmpdir / 'init.json'
+            json.dump(vars(self.args), init_json.open('w', encoding='utf-8'))
             cmd = ('mmdebstrap', '--mode=unshare',
                    f'--variant={variant}',
                    '--skip=output/mknod',
@@ -139,6 +141,7 @@ class Builder:
                    f"--setup-hook=upload {tmp.name} /mesa-build-setup-init.sh",
                    cmd('/bin/bash /mesa-build-setup-init.sh'),
                    r'--customize-hook=rm "$1"/mesa-build-setup-init.sh',
+                   f"--setup-hook=upload {str(init_json)} /{init_json.name}",
                    self.debian_dist, root_tar)
             if self.args.mirror:
                 cmd += (self.args.mirror,)
