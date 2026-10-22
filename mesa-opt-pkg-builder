@@ -10,8 +10,12 @@ import pathlib
 import os
 import json
 import itertools
-import git
 import argparse
+
+try:
+    import git
+except Exception:
+    pass
 
 
 # This script helps build a Mesa build which can install under
@@ -80,8 +84,6 @@ class Builder:
         }
         self.arch = arch
         self.arch_map.update({v: v for v in tuple(self.arch_map.values())})
-
-        self.branch = self.repo.active_branch
 
     init_tmp_script = textwrap.dedent(r'''
     #!/usr/bin/env bash
