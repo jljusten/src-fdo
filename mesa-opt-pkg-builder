@@ -111,7 +111,10 @@ class Builder:
     ''')
 
     def init(self):
-        return self.init_arch(self.arch)
+        if self.args.mode == 'chroot-init':
+            return self.chroot_init()
+        else:
+            return self.init_arch(self.arch)
 
     def init_arch(self, arch):
         builder_cache.mkdir(parents=True, exist_ok=True)
@@ -154,6 +157,24 @@ class Builder:
                 print(cmd)
             cp = subprocess.run(cmd, env=env)
             return cp.returncode == 0
+
+    def chroot_init(self):
+        fn = pathlib.Path('/etc/apt/sources.list')
+        lns = fn.read_text(encoding="utf-8").splitlines()
+        lns = (ln for ln in lns if l.startswith('deb '))
+        lns = ('deb-src' + ln[3:] for ln in lns)
+        fn = pathlib.Path('/etc/apt/sources.list.d/deb-src.list')
+        fn.write_text('\n'.join(lns), encoding="utf-8")
+
+        cmds = (
+            'apt update -y',
+            'apt dist-upgrade -y',
+            'apt-get -y build-dep mesa',
+            'apt-get -y install zstd',
+        )
+        for c in cmds:
+            subprocess.run(c.split())
+        pass
 
     def arch_tar(self):
         return builder_cache / f'{self.get_builder_basename()}.tar.zst'
