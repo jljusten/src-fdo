@@ -68,10 +68,16 @@ class Builder:
         ubuntu_codenames = {k: tuple((s.lower() for s in v.split()))
                             for k, v in ubuntu_codenames.items()}
         ubuntu_aliases = {'ubuntu'+k: v[0] for k, v in ubuntu_codenames.items()}
+        ubuntu_aliases.update({v: v for v in ubuntu_aliases.values()})
 
-        dist_aliases = {
-            'sid': 'debian-unstable',
+        debian_aliases = {
+            'sid': 'unstable',
         }
+
+        dist_aliases = {}
+        dist_aliases.update(debian_aliases)
+        dist_aliases.update({'debian-'+k: v for k, v in debian_aliases.items()})
+        dist_aliases.update({'debian-'+v: v for v in debian_aliases.values()})
         dist_aliases.update(ubuntu_aliases)
         dist_aliases.update({v: v for v in
                              tuple(dist_aliases.values())})
@@ -86,6 +92,8 @@ class Builder:
         }
         self.arch = arch
         self.arch_map.update({v: v for v in tuple(self.arch_map.values())})
+
+        self.ubuntu = self.dist in ubuntu_aliases
 
     init_tmp_script = textwrap.dedent(r'''
     #!/usr/bin/env python3
