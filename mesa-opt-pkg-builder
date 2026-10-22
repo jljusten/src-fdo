@@ -258,8 +258,13 @@ class Builder:
 
 
 class App:
-    def __init__(self):
-        self.parse_cmdline()
+    def __init__(self, mode):
+        if mode == 'chroot-init':
+            with pathlib.Path('/init.json').open("r", encoding="utf-8") as jf:
+                self.args = types.SimpleNamespace(json.load(jf))
+        else:
+            self.parse_cmdline()
+        self.args.mode = mode
         self.architectures = self.args.arch.split(',')
 
         for arch in self.architectures:
@@ -314,5 +319,9 @@ class App:
         self.args = types.SimpleNamespace(vars(a))
 
 
+def chroot_initial_setup():
+    App(mode='chroot-init')
+
+
 if __name__ == "__main__":
-    App()
+    App(mode='app')
