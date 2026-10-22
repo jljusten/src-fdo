@@ -23,14 +23,15 @@ except Exception:
 description = 'Build Mesa package that will install under /opt/mesa'
 
 xdg_data = os.environ.get('XDG_DATA_HOME')
+home_dir = os.environ.get('HOME') or '/root'
 if not xdg_data:
-    xdg_data = os.path.join(os.environ['HOME'], '.local', 'share')
+    xdg_data = os.path.join(home_dir, '.local', 'share')
 xdg_data = pathlib.Path(xdg_data)
 xdg_data_plus = lambda *args: xdg_data.joinpath(*args)
 
 xdg_cache = os.environ.get('XDG_CACHE_HOME')
 if not xdg_cache:
-    xdg_cache = os.path.join(os.environ['HOME'], '.cache')
+    xdg_cache = os.path.join(home_dir, '.cache')
 xdg_cache = pathlib.Path(xdg_cache)
 xdg_cache_plus = lambda *args: xdg_cache.joinpath(*args)
 
